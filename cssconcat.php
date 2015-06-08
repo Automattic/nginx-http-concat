@@ -91,7 +91,7 @@ class WPcom_CSS_Concat extends WP_Styles {
 				$media = $obj->args;
 				if( empty( $media ) )
 					$media = 'all';
-				if ( ! is_array( $stylesheets[ $stylesheet_group_index ] ) )
+				if ( ! isset( $stylesheets[ $stylesheet_group_index ] ) || ( isset( $stylesheets[ $stylesheet_group_index ] ) && ! is_array( $stylesheets[ $stylesheet_group_index ] ) ) )
 					$stylesheets[ $stylesheet_group_index ] = array();
 
 				$stylesheets[ $stylesheet_group_index ][ $media ][ $handle ] = $css_url['path'];
