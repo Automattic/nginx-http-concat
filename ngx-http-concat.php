@@ -199,7 +199,7 @@ foreach ( $args as $uri ) {
 			);
 		}
 
-		$buf = $css_minify->run( $buf );k
+		$buf = $css_minify->run( $buf );
 	}
 
 	if ( 'application/x-javascript' == $mime_type )
