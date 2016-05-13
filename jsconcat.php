@@ -86,9 +86,10 @@ class WPcom_JS_Concat extends WP_Scripts {
 
 			//Don't concat items with associated inline scripts
 			$before_handle = $this->print_inline_script( $handle, 'before', false );
-			$after_handle = $this->print_inline_script( $handle, 'after', false );
-			if ( $before_handle || $after_handle )
+			$after_handle  = $this->print_inline_script( $handle, 'after', false );
+			if ( $before_handle || $after_handle ) {
 				$do_concat = false;
+			}
 
 			if ( true === $do_concat ) {
 				if ( !isset( $javascripts[$level] ) )
