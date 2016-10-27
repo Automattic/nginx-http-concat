@@ -31,8 +31,6 @@ class WPcom_CSS_Concat extends WP_Styles {
 			}
 			unset( $this->$key );
 		}
-
-		parent::__construct();
 	}
 
 	function do_items( $handles = false, $group = false ) {
