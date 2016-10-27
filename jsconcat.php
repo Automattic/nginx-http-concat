@@ -31,8 +31,6 @@ class WPcom_JS_Concat extends WP_Scripts {
 			}
 			unset( $this->$key );
 		}
-
-		parent::__construct();
 	}
 
 	function do_items( $handles = false, $group = false ) {
