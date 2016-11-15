@@ -161,7 +161,6 @@ class WPcom_JS_Concat extends WP_Scripts {
 					}
 				}
 				echo "<script type='text/javascript' src='$href'></script>\n";
-				echo "<script type='text/javascript' src='$href'></script>\n";
 				if ( isset( $js_array['extras']['after'] ) ) {
 					foreach ( $js_array['extras']['after'] as $inline_after ) {
 						echo $inline_after;
