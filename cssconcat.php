@@ -48,18 +48,19 @@ class WPcom_CSS_Concat extends WP_Styles {
 			// Core is kind of broken and returns "true" for src of "colors" handle
 			// http://core.trac.wordpress.org/attachment/ticket/16827/colors-hacked-fixed.diff
 			// http://core.trac.wordpress.org/ticket/20729
-			if ( 'colors' == $obj->handle && true === $obj->src ) {
-				$css_url = parse_url( wp_style_loader_src( $obj->src, $obj->handle ) );
-			} else {
-				$css_url = parse_url( $obj->src );
+			$css_url = $obj->src;
+			if ( 'colors' == $obj->handle && true === $css_url ) {
+				$css_url = wp_style_loader_src( $css_url, $obj->handle );
 			}
+
+			$css_url_parsed = parse_url( $obj->src );
 			$extra = $obj->extra;
 
 			// Don't concat by default
 			$do_concat = false;
 
 			// Only try to concat static css files
-			if ( false !== strpos( $css_url['path'], '.css' ) )
+			if ( false !== strpos( $css_url_parsed['path'], '.css' ) )
 				$do_concat = true;
 
 			// Don't try to concat styles which are loaded conditionally (like IE stuff)
@@ -71,16 +72,16 @@ class WPcom_CSS_Concat extends WP_Styles {
 				$do_concat = false;
 
 			// Don't try to concat externally hosted scripts
-			if ( ( isset( $css_url['host'] ) && ( preg_replace( '/https?:\/\//', '', $siteurl ) != $css_url['host'] ) ) )
+			if ( ( isset( $css_url_parsed['host'] ) && ( preg_replace( '/https?:\/\//', '', $siteurl ) != $css_url_parsed['host'] ) ) )
 				$do_concat = false;
 
 			// Concat and canonicalize the paths only for
 			// existing scripts that aren't outside ABSPATH
-			$css_realpath = realpath( ABSPATH . $css_url['path'] );
+			$css_realpath = realpath( ABSPATH . $css_url_parsed['path'] );
 			if ( ! $css_realpath || 0 !== strpos( $css_realpath, ABSPATH ) )
 				$do_concat = false;
 			else
-				$css_url['path'] = substr( $css_realpath, strlen( ABSPATH ) - 1 );
+				$css_url_parsed['path'] = substr( $css_realpath, strlen( ABSPATH ) - 1 );
 
 			// Allow plugins to disable concatenation of certain stylesheets.
 			$do_concat = apply_filters( 'css_do_concat', $do_concat, $handle );
@@ -92,7 +93,7 @@ class WPcom_CSS_Concat extends WP_Styles {
 				if ( ! isset( $stylesheets[ $stylesheet_group_index ] ) || ( isset( $stylesheets[ $stylesheet_group_index ] ) && ! is_array( $stylesheets[ $stylesheet_group_index ] ) ) )
 					$stylesheets[ $stylesheet_group_index ] = array();
 
-				$stylesheets[ $stylesheet_group_index ][ $media ][ $handle ] = $css_url['path'];
+				$stylesheets[ $stylesheet_group_index ][ $media ][ $handle ] = $css_url_parsed['path'];
 				$this->done[] = $handle;
 			} else {
 				$stylesheet_group_index++;
