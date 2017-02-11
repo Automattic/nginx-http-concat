@@ -8,6 +8,8 @@ Version: 0.01
 Author URI: http://automattic.com/
  */
 
+require_once( dirname( __FILE__ ) . '/concat-utils.php' );
+
 if ( ! defined( 'ALLOW_GZIP_COMPRESSION' ) )
 	define( 'ALLOW_GZIP_COMPRESSION', true );
 
@@ -72,8 +74,10 @@ class WPcom_CSS_Concat extends WP_Styles {
 				$do_concat = false;
 
 			// Don't try to concat externally hosted scripts
-			if ( ( isset( $css_url_parsed['host'] ) && ( preg_replace( '/https?:\/\//', '', $siteurl ) != $css_url_parsed['host'] ) ) )
+			$is_internal_url = WPCOM_Concat_Utils::is_internal_url( $css_url, $siteurl );
+			if ( ! $is_internal_url ) {
 				$do_concat = false;
+			}
 
 			// Concat and canonicalize the paths only for
 			// existing scripts that aren't outside ABSPATH
