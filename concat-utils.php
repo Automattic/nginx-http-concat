@@ -11,7 +11,9 @@ class WPCOM_Concat_Utils {
 		}
 
 		if ( isset( $site_url_parsed['path'] )
-			&& 0 !== strpos( $test_url_parsed['path'], $site_url_parsed['path'] ) ) {
+			&& 0 !== strpos( $test_url_parsed['path'], $site_url_parsed['path'] )
+			&& isset( $test_url_parsed['host'] ) //and if the URL of enqueued style is not relative
+		) {
 			return false;
 		}	
 
