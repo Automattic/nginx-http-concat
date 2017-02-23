@@ -52,7 +52,7 @@ class WPCOM_Concat_Utils__Is_External_Url__TestCase extends WP_UnitTestCase {
 			'subdir_site__internal_absolute_url' => array(
 				'/wp-content/plugins/plugin/style.css',
 				'https://example.com/mysite',
-				false,
+				true,
 			),
 		);
 	}
