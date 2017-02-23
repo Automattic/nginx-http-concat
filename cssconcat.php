@@ -147,7 +147,7 @@ class WPcom_CSS_Concat extends WP_Styles {
 		if ( ! isset( $parts['path'] ) || empty( $parts['path'] ) )
 			return $url;
 
-		$file = ABSPATH . ltrim( $parts['path'], '/' );
+		$file = WPCOM_Concat_Utils::realpath( $url );
 
 		$mtime = false;
 		if ( file_exists( $file ) )
