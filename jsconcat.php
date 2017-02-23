@@ -62,7 +62,8 @@ class WPcom_JS_Concat extends WP_Scripts {
 				$this->in_footer = array_diff( $this->in_footer, (array) $handle );
 
 			$obj = $this->registered[$handle];
-			$js_url_parsed = parse_url( $obj->src );
+			$js_url = $obj->src;
+			$js_url_parsed = parse_url( $js_url );
 			$extra = $obj->extra;
 
 			// Check for scripts added from wp_add_inline_script()
