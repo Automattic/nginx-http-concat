@@ -127,7 +127,8 @@ class WPcom_CSS_Concat extends WP_Styles {
 					$href = $this->cache_bust_mtime( $siteurl . current( $css ) );
 				}
 
-				echo apply_filters( 'style_loader_tag', "<link rel='stylesheet' id='$media-css-$idx' href='$href' type='text/css' media='$media' />\n", $handle, $href, $media );
+				$handles = array_keys( $css );
+				echo apply_filters( 'concat_style_loader_tag', "<link rel='stylesheet' id='$media-css-$idx' href='$href' type='text/css' media='$media' />\n", $handles, $href, $media );
 				array_map( array( $this, 'print_inline_style' ), array_keys( $css ) );
 			}
 		}
