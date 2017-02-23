@@ -81,17 +81,7 @@ class WPcom_CSS_Concat extends WP_Styles {
 
 			// Concat and canonicalize the paths only for
 			// existing scripts that aren't outside ABSPATH
-			if ( true === is_multisite() && false == constant( 'SUBDOMAIN_INSTALL' ) ) {
-				$blog_details = get_blog_details();
-				if ( '/' !== $blog_details->path ) {
-					//In case of subdir multisite, we need to remove the blog's path from the style's path in order to be able to find the file
-					$css_realpath = realpath( ABSPATH . str_replace( $blog_details->path, '', $css_url_parsed['path'] ) );
-				} else {
-					$css_realpath = realpath( ABSPATH . $css_url_parsed['path'] );
-				}
-			} else {
-				$css_realpath = realpath( ABSPATH . $css_url_parsed['path'] );
-			}
+			$css_realpath = WPCOM_Concat_Utils::realpath( $css_url );
 			if ( ! $css_realpath || 0 !== strpos( $css_realpath, ABSPATH ) )
 				$do_concat = false;
 			else

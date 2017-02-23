@@ -90,17 +90,7 @@ class WPcom_JS_Concat extends WP_Scripts {
 
 			// Concat and canonicalize the paths only for
 			// existing scripts that aren't outside ABSPATH
-			if ( true === is_multisite() && false == constant( 'SUBDOMAIN_INSTALL' ) ) {
-				$blog_details = get_blog_details();
-				if ( '/' !== $blog_details->path ) {
-					//In case of subdir multisite, we need to remove the blog's path from the style's path in order to be able to find the file
-					$js_realpath = realpath( ABSPATH . str_replace( $blog_details->path, '', $js_url_parsed['path'] ) );
-				} else {
-					$js_realpath = realpath( ABSPATH . $js_url_parsed['path'] );
-				}
-			} else {
-				$js_realpath = realpath( ABSPATH . $js_url_parsed['path'] );
-			}
+			$js_realpath = WPCOM_Concat_Utils::realpath( $js_url );
 			if ( ! $js_realpath || 0 !== strpos( $js_realpath, ABSPATH ) )
 				$do_concat = false;
 			else
