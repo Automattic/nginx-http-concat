@@ -32,5 +32,4 @@ before_script:
     fi
 
 script:
-  - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
   - phpunit
