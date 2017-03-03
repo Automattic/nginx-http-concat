@@ -19,19 +19,22 @@ class WPCOM_Concat_Utils {
 
 		return true;
 	}
-	public static function realpath( $url ) {
-		$url_parsed = parse_url( $url );
-		if ( true === is_multisite() && false == constant( 'SUBDOMAIN_INSTALL' ) ) {
-			$blog_details = get_blog_details();
-			if ( '/' !== $blog_details->path ) {
-				//In case of subdir multisite, we need to remove the blog's path from the style's path in order to be able to find the file
-				$realpath = realpath( ABSPATH . str_replace( $blog_details->path, '', $url_parsed['path'] ) );
-			} else {
-				$realpath = realpath( ABSPATH . $url_parsed['path'] );
-			}
-		} else {
-			$realpath = realpath( ABSPATH . $url_parsed['path'] );
+
+	public static function realpath( $url, $site_url ) {
+		$url_path = parse_url( $url, PHP_URL_PATH );
+		$site_url_path = parse_url( $site_url, PHP_URL_PATH );
+		// To avoid partial matches; subdir install at `/wp` would match `/wp-includes`
+		$site_url_path = trailingslashit( $site_url_path );
+
+		// If this is a subdirectory site, we need to strip off the subdir from the URL.
+		// In a multisite install, the subdir is virtual and therefore not needed in the path.
+		// In a single-site subdir install, the subdir is included in the ABSPATH and therefore ends up duplicated.
+		if ( $site_url_path && '/' !== $site_url_path
+			&& 0 === strpos( $url_path, $site_url_path ) ) {
+			$url_path_without_subdir = preg_replace( '#^' . $site_url_path . '#', '', $url_path, 1 );
+			return realpath( ABSPATH . $url_path_without_subdir );
 		}
-		return $realpath;
+
+		return realpath( ABSPATH . $url_path );
 	}
 }
