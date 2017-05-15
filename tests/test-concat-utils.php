@@ -203,7 +203,6 @@ class WPCOM_Concat_Utils__Replace_Relative_Url__TestCase extends WP_UnitTestCase
 	 */
 	function test__function( $test_string, $expected, $dirpath = '/' ) {
 		$actual = WPCOM_Concat_Utils::relative_path_replace( $test_string, $dirpath );
-		//if ( false === strpos( $test_string, '?#' ) )
-			$this->assertSame( $expected, $actual );
+		$this->assertSame( $expected, $actual );
 	}
 }
