@@ -11,7 +11,9 @@
  * It will also replace the relative paths in CSS files with absolute paths.
  */
 
-require __DIR__ . '/cssmin/cssmin.php';
+
+require_once( __DIR__ . '/cssmin/cssmin.php' );
+require_once( __DIR__ . '/concat-utils.php' );
 
 /* Config */
 $concat_max_files = 150;
@@ -148,11 +150,7 @@ foreach ( $args as $uri ) {
 		$dirpath = dirname( $uri );
 
 		// url(relative/path/to/file) -> url(/absolute/and/not/relative/path/to/file)
-		$buf = preg_replace(
-			'/(:?\s*url\s*\()\s*(?:\'|")?\s*([^\/\'"\s\)](?:(?<!data:|http:|https:|#|%23).)*)[\'"\s]*\)/isU',
-			'$1' . ( $dirpath == '/' ? '/' : $dirpath . '/' ) . '$2)',
-			$buf
-		);
+		$buf = WPCOM_Concat_Utils::relative_path_replace( $buf, $dirpath );
 
 		// AlphaImageLoader(...src='relative/path/to/file'...) -> AlphaImageLoader(...src='/absolute/path/to/file'...)
 		$buf = preg_replace(
