@@ -94,8 +94,14 @@ $args = substr( $args, strpos( $args, '?' ) + 1 );
 // /foo/bar.css,/foo1/bar/baz.css?m=293847g
 // or
 // -eJzTT8vP109KLNJLLi7W0QdyDEE8IK4CiVjn2hpZGluYmKcDABRMDPM=
-if ( '-' == $args[0] )
+if ( '-' == $args[0] ) {
 	$args = @gzuncompress( base64_decode( substr( $args, 1 ) ) );
+
+	// Invalid data, abort!
+	if ( false === $args ) {
+		die();
+	}
+}
 
 // /foo/bar.css,/foo1/bar/baz.css?m=293847g
 $version_string_pos = strpos( $args, '?' );
