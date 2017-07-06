@@ -99,7 +99,7 @@ if ( '-' == $args[0] ) {
 
 	// Invalid data, abort!
 	if ( false === $args ) {
-		die();
+		concat_http_status_exit( 400 );
 	}
 }
 
