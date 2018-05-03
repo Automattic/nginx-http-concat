@@ -158,7 +158,26 @@ class WPcom_JS_Concat extends WP_Scripts {
 						echo $inline_before;
 					}
 				}
-				echo "<script type='text/javascript' src='$href'></script>\n";
+
+				/**
+				 * Allow adding extra arguments for the script tag.
+				 * Either associative array or regular array.
+				 * E.g.
+				 * [ 'async', 'defer', 'onload' => 'onLoadCallback' ]
+				 *
+				 * @param string $href url for the script
+				 * @param array $js_array holds the additional information on handles being concatenated, their real path, urls, etc
+				 * @param WPcom_JS_Concat this instance of WPcom_JS_Concat
+				 */
+				$attr_string = '';
+				foreach ( (array) apply_filters( 'js_concat_script_attributes', [], $href, $js_array, $this ) as $k => $v ) {
+					if ( ! is_scalar( $v ) )
+						continue;
+
+					$attr_string .= sprintf( ' %s="%s"', sanitize_key( is_int( $k ) ? $v : $k ), esc_attr( $v ) );
+				}
+				printf( '<script type="text/javascript" src="%s" %s></script>', $href, $attr_string );
+
 				if ( isset( $js_array['extras']['after'] ) ) {
 					foreach ( $js_array['extras']['after'] as $inline_after ) {
 						echo $inline_after;
