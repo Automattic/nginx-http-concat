@@ -89,17 +89,17 @@ class WPcom_JS_Concat extends WP_Scripts {
 			else
 				$js_url_parsed['path'] = substr( $js_realpath, strlen( ABSPATH ) - 1 );
 
-            // Check for scripts added from wp_add_inline_script()
-            $before_handle = $this->print_inline_script( $handle, 'before', false );
-            $after_handle = $this->print_inline_script( $handle, 'after', false );
-            if ( $before_handle ) {
-                $do_concat = false;
-                $before_handle = sprintf( "<script type='text/javascript'>\n%s\n</script>\n", $before_handle );
-            }
-            if ( $after_handle ) {
-                $after_handle = sprintf( "<script type='text/javascript'>\n%s\n</script>\n", $after_handle );
-                $do_concat = false;
-            }
+			// Check for scripts added from wp_add_inline_script()
+			$before_handle = $this->print_inline_script( $handle, 'before', false );
+			$after_handle = $this->print_inline_script( $handle, 'after', false );
+			if ( $before_handle ) {
+				$do_concat = false;
+				$before_handle = sprintf( "<script type='text/javascript'>\n%s\n</script>\n", $before_handle );
+			}
+			if ( $after_handle ) {
+				$after_handle = sprintf( "<script type='text/javascript'>\n%s\n</script>\n", $after_handle );
+				$do_concat = false;
+			}
 
 			// Allow plugins to disable concatenation of certain scripts.
 			$do_concat = apply_filters( 'js_do_concat', $do_concat, $handle );
