@@ -89,6 +89,13 @@ class WPcom_JS_Concat extends WP_Scripts {
 			else
 				$js_url_parsed['path'] = substr( $js_realpath, strlen( ABSPATH ) - 1 );
 
+			// Check for inline translations
+			$translations = $this->print_translations( $handle, false );
+			if ( $translations ) {
+				$do_concat = false;
+				$translations = sprintf( "<script type='text/javascript'>\n%s\n</script>\n", $translations );
+			}
+			
 			// Check for scripts added from wp_add_inline_script()
 			$before_handle = $this->print_inline_script( $handle, 'before', false );
 			$after_handle = $this->print_inline_script( $handle, 'after', false );
