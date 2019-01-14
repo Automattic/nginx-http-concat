@@ -123,14 +123,6 @@ class WPcom_JS_Concat extends WP_Scripts {
 				$javascripts[$level]['paths'][] = $js_url_parsed['path'];
 				$javascripts[$level]['handles'][] = $handle;
 
-				// Add inline scripts to Javascripts array for later processing
-				if ( $before_handle ) {
-					$javascripts[$level]['extras']['before'][] = $before_handle;
-				}
-				if ( $after_handle ) {
-					$javascripts[$level]['extras']['after'][] = $after_handle;
-				}
-
 			} else {
 				$level++;
 				$javascripts[$level]['type'] = 'do_item';
