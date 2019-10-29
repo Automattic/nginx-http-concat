@@ -141,6 +141,12 @@ class WPcom_JS_Concat extends WP_Scripts {
 					$this->done[] = $js_array['handle'];
 			} else if ( 'concat' == $js_array['type'] ) {
 				array_map( array( $this, 'print_extra_script' ), $js_array['handles'] );
+				foreach ( $js_array['handles'] as $handle ) {
+					$translations = $this->print_translations( $handle, false );
+					if ( $translations ) {
+						$translations = sprintf( "<script type='text/javascript'>\n%s\n</script>\n", $translations );
+					}
+				}
 
 				if ( count( $js_array['paths'] ) > 1) {
 					$paths = array_map( function( $url ) { return ABSPATH . $url; }, $js_array['paths'] );
