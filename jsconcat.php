@@ -67,16 +67,16 @@ class WPcom_JS_Concat extends WP_Scripts {
 			if ( in_array( $handle, $this->done ) || !isset( $this->registered[$handle] ) )
 				continue;
 
+			if ( 0 === $group && $this->groups[$handle] > 0 ) {
+				$this->in_footer[] = $handle;
+				unset( $this->to_do[$key] );
+				continue;
+			}
+
 			if ( ! $this->registered[$handle]->src ) { // Defines a group.
 				// if there are localized items, echo them
 				$this->print_extra_script( $handle );
 				$this->done[] = $handle;
-				continue;
-			}
-
-			if ( 0 === $group && $this->groups[$handle] > 0 ) {
-				$this->in_footer[] = $handle;
-				unset( $this->to_do[$key] );
 				continue;
 			}
 
