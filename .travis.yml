@@ -31,5 +31,3 @@ before_script:
     else
       composer global require "phpunit/phpunit:^4"
     fi
-
-script: phpunit
