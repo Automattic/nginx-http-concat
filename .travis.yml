@@ -33,5 +33,4 @@ before_script:
       composer global require "phpunit/phpunit:^4"
     fi
 
-script:
-  - ./vendor/bin/phpunit
+script: $HOME/.composer/vendor/bin/phpunit
