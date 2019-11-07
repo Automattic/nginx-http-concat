@@ -166,7 +166,10 @@ class WPcom_JS_Concat extends WP_Scripts {
 						echo $inline_before;
 					}
 				}
-				echo "<script type='text/javascript' src='$href'></script>\n";
+				//Allow sites to async and defer the concatenated JS
+				$should_async = apply_filters( 'js_concat_should_async', false );
+				$should_defer = apply_filters( 'js_concat_should_defer', false );
+				echo "<script type='text/javascript' src='$href' " . ( $should_async ? 'async' : '' ) . ( $should_defer ? 'defer' : '' ) . " ></script>\n";
 				if ( isset( $js_array['extras']['after'] ) ) {
 					foreach ( $js_array['extras']['after'] as $inline_after ) {
 						echo $inline_after;
