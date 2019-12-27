@@ -133,7 +133,8 @@ class WPcom_CSS_Concat extends WP_Styles {
 				}
 
 				$handles = array_keys( $css );
-				echo apply_filters( 'ngx_http_concat_style_loader_tag', "<link rel='stylesheet' id='$media-css-$idx' href='$href' type='text/css' media='$media' />\n", $handles, $href, $media );
+				$clean_media = str_replace( ' ', '-', $media );
+				echo apply_filters( 'ngx_http_concat_style_loader_tag', "<link rel='stylesheet' id='$clean_media-css-$idx' href='$href' type='text/css' media='$media' />\n", $handles, $href, $media );
 				array_map( array( $this, 'print_inline_style' ), array_keys( $css ) );
 			}
 		}
