@@ -92,33 +92,64 @@ class WPcom_JS_Concat extends WP_Scripts {
 			$do_concat = false;
 
 			// Only try to concat static js files
-			if ( false !== strpos( $js_url_parsed['path'], '.js' ) )
+			if ( false !== strpos( $js_url_parsed['path'], '.js' ) ) {
 				$do_concat = true;
+			} else {
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					echo sprintf( "\n<!-- No Concat JS %s => Maybe Not Static File %s -->\n", esc_html( $handle ), esc_html( $obj->src ) );
+				}
+			}
 
 			// Don't try to concat externally hosted scripts
 			$is_internal_url = WPCOM_Concat_Utils::is_internal_url( $js_url, $siteurl );
-			if ( ! $is_internal_url ) {
+			if ( $do_concat && ! $is_internal_url ) {
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					echo sprintf( "\n<!-- No Concat JS %s => External URL: %s -->\n", esc_html( $handle ), esc_url( $js_url ) );
+				}
 				$do_concat = false;
 			}
 
 			// Concat and canonicalize the paths only for
 			// existing scripts that aren't outside ABSPATH
-			$js_realpath = WPCOM_Concat_Utils::realpath( $js_url, $siteurl );
-			if ( ! $js_realpath || 0 !== strpos( $js_realpath, ABSPATH ) )
-				$do_concat = false;
-			else
-				$js_url_parsed['path'] = substr( $js_realpath, strlen( ABSPATH ) - 1 );
+			if ( $do_concat ) {
+				$js_realpath = WPCOM_Concat_Utils::realpath( $js_url, $siteurl );
+				if ( ! $js_realpath || ! file_exists( $js_realpath ) ) {
+					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+						echo sprintf( "\n<!-- No Concat JS %s => Invalid Path %s -->\n", esc_html( $handle ), esc_html( $js_realpath ) );
+					}
+					$do_concat = false;
+				}
+			}
 
-			if ( $this->has_inline_content( $handle ) ) {
+			if ( $do_concat && $this->has_inline_content( $handle ) ) {
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					echo sprintf( "\n<!-- No Concat JS %s => Has Inline Content -->\n", esc_html( $handle ) );
+				}
 				$do_concat = false;
 			}
-			
+
 			// Skip core scripts that use Strict Mode
-			if ( 'react' === $handle || 'react-dom' === $handle ) {
+			if ( $do_concat && ( 'react' === $handle || 'react-dom' === $handle ) ) {
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					echo sprintf( "\n<!-- No Concat JS %s => Has Strict Mode (Core) -->\n", esc_html( $handle ) );
+				}
+				$do_concat = false;
+			}
+
+			// Skip third-party scripts that use Strict Mode
+			if ( $do_concat && preg_match_all( '/^[\',"]use strict[\',"];/Uims', file_get_contents( $js_realpath ), $matches ) ) {
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					echo sprintf( "\n<!-- No Concat JS %s => Has Strict Mode (Third-Party) -->\n", esc_html( $handle ) );
+				}
 				$do_concat = false;
 			}
 
 			// Allow plugins to disable concatenation of certain scripts.
+			if ( $do_concat && ! apply_filters( 'js_do_concat', $do_concat, $handle ) ) {
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					echo sprintf( "\n<!-- No Concat JS %s => Filtered `false` -->\n", esc_html( $handle ) );
+				}
+			}
 			$do_concat = apply_filters( 'js_do_concat', $do_concat, $handle );
 
 			if ( true === $do_concat ) {
@@ -148,7 +179,19 @@ class WPcom_JS_Concat extends WP_Scripts {
 				array_map( array( $this, 'print_extra_script' ), $js_array['handles'] );
 
 				if ( isset( $js_array['paths'] ) && count( $js_array['paths'] ) > 1) {
-					$paths = array_map( function( $url ) { return ABSPATH . $url; }, $js_array['paths'] );
+					$paths = array_map( function( $url ) {
+						$path = ABSPATH . $url;
+
+						if ( ! file_exists( $path )
+							&& false !== strpos( $url, '/wp-content/' )
+							&& defined( 'WP_CONTENT_DIR' )
+						) {
+							$count = 1; // Only variables can be passed by reference.
+							$path  = str_replace( '/wp-content', WP_CONTENT_DIR, $url, $count );
+						}
+
+						return $path;
+					}, $js_array['paths'] );
 					$mtime = max( array_map( 'filemtime', $paths ) );
 					$path_str = implode( $js_array['paths'], ',' ) . "?m=${mtime}j";
 
@@ -172,7 +215,11 @@ class WPcom_JS_Concat extends WP_Scripts {
 					}
 				}
 				if ( isset( $href ) ) {
-					echo "<script type='text/javascript' src='$href'></script>\n";
+					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+						echo "<script data-handles='" . esc_attr( implode( ',', $js_array['handles'] ) ) . "' type='text/javascript' src='$href'></script>\n";
+					} else {
+						echo "<script type='text/javascript' src='$href'></script>\n";
+					}
 				}
 				if ( isset( $js_array['extras']['after'] ) ) {
 					foreach ( $js_array['extras']['after'] as $inline_after ) {

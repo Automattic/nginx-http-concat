@@ -23,10 +23,6 @@ $concat_types = array(
 	'js' => 'application/x-javascript'
 );
 
-/* Constants */
-// By default determine the document root from this scripts path in the plugins dir (you can hardcode this define)
-define( 'CONCAT_FILES_ROOT', substr( dirname( __DIR__ ), 0, strpos( dirname( __DIR__ ), '/wp-content' ) ) );
-
 function concat_http_status_exit( $status ) {
 	switch ( $status ) {
 		case 200:
@@ -75,7 +71,14 @@ function concat_get_path( $uri ) {
 	if ( false !== strpos( $uri, '..' ) || false !== strpos( $uri, "\0" ) )
 		concat_http_status_exit( 400 );
 
-	return CONCAT_FILES_ROOT . ( '/' != $uri[0] ? '/' : '' ) . $uri;
+	if ( false !== strpos( $uri, '/wp-content/' ) && defined( 'WP_CONTENT_DIR' ) ) {
+		$files_root = WP_CONTENT_DIR;
+		$uri = str_replace( '/wp-content/', '', $uri, $count = 1 ); // Remove duplicate /wp-content/
+	} else {
+		$files_root = ABSPATH;
+	}
+
+	return $files_root . ( '/' != $uri[0] ? '/' : '' ) . $uri;
 }
 
 /* Main() */

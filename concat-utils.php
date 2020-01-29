@@ -31,11 +31,21 @@ class WPCOM_Concat_Utils {
 		// In a single-site subdir install, the subdir is included in the ABSPATH and therefore ends up duplicated.
 		if ( $site_url_path && '/' !== $site_url_path
 			&& 0 === strpos( $url_path, $site_url_path ) ) {
-			$url_path_without_subdir = preg_replace( '#^' . $site_url_path . '#', '', $url_path, 1 );
-			return realpath( ABSPATH . $url_path_without_subdir );
+			$url_path = preg_replace( '#^' . $site_url_path . '#', '', $url_path, 1 );
 		}
 
-		return realpath( ABSPATH . $url_path );
+		$realpath = realpath( ABSPATH . $url_path );
+
+		// If `/wp-content/` is in a non-traditional directory, we may need to adjust.
+		if ( ! file_exists( $realpath )
+			&& false !== strpos( $url_path, '/wp-content/' )
+			&& defined( 'WP_CONTENT_DIR' )
+		) {
+			$url_path = str_replace( '/wp-content', WP_CONTENT_DIR, $url_path, $count = 1 );
+			$realpath = realpath( $url_path );
+		}
+
+		return $realpath;
 	}
 
 	public static function relative_path_replace( $buf, $dirpath ) {
