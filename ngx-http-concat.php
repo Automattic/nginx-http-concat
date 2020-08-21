@@ -217,9 +217,11 @@ foreach ( $args as $uri ) {
 	}
 
 	if ( 'application/x-javascript' == $mime_type ) {
+		$output .= "$buf;\n";
+	} else if ( $concat_types['js'] == $mime_type ) {
 		$output .= "(function(window, document, undefined) {\n";
 		$output .= $buf;
-		$output .= "\n})(window, document);\n";
+		$output .= "\n}).call(this, window, document);\n";
 	} else {
 		$output .= "$buf";
 	}
