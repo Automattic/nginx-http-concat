@@ -216,10 +216,15 @@ foreach ( $args as $uri ) {
 		$buf = $css_minify->run( $buf );
 	}
 
-	if ( 'application/x-javascript' == $mime_type )
+	if ( 'application/x-javascript' == $mime_type ) {
 		$output .= "$buf;\n";
-	else
+	} else if ( $concat_types['js'] == $mime_type ) {
+		$output .= "(function(window, document, undefined) {\n";
+		$output .= $buf;
+		$output .= "\n}).call(this, window, document);\n";
+	} else {
 		$output .= "$buf";
+	}
 }
 
 header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
