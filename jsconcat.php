@@ -173,7 +173,13 @@ class WPcom_JS_Concat extends WP_Scripts {
 				}
 				if ( isset( $href ) ) {
 					$tag = "<script type='text/javascript' src='$href'></script>\n";
-					// Allow
+					/**
+					 * Filters the HTML script tag of an enqueued script.
+					 * 
+					 * @param string $tag        The `<script>` tag for the enqueued script.
+					 * @param string $js_array   The array with the type, path, and handles for the scripts being concatenated.
+					 * @param string $href       The script's source URL.
+					 */
 					$tag = apply_filters( 'script_loader_tag', $tag, $js_array, $href );
 					echo $tag;
 				}
