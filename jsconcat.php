@@ -172,7 +172,10 @@ class WPcom_JS_Concat extends WP_Scripts {
 					}
 				}
 				if ( isset( $href ) ) {
-					echo "<script type='text/javascript' src='$href'></script>\n";
+					$tag = "<script type='text/javascript' src='$href'></script>\n";
+					// Allow
+					$tag = apply_filters( 'script_loader_tag', $tag, $js_array, $href );
+					echo $tag;
 				}
 				if ( isset( $js_array['extras']['after'] ) ) {
 					foreach ( $js_array['extras']['after'] as $inline_after ) {
