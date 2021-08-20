@@ -30,5 +30,5 @@ before_script:
     if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then
       composer global require "phpunit/phpunit:^7"
     else
-      composer global require "phpunit/phpunit:^4"
+      composer global require "phpunit/phpunit:^5.4"
     fi
