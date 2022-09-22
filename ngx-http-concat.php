@@ -180,10 +180,13 @@ foreach ( $args as $uri ) {
 			preg_replace_callback(
 				'/(?P<charset_rule>@charset\s+[\'"][^\'"]+[\'"];)/i',
 				function ( $match ) {
-					global $pre_output;
+					global $pre_output, $buf;					
 
 					if ( 0 === strpos( $pre_output, '@charset' ) )
 						return '';
+
+					//strip $match[0] from $buf before adding it to beginning of $pre_output
+					$buf = str_replace($match[0], "", $buf);
 
 					$pre_output = $match[0] . "\n" . $pre_output;
 
