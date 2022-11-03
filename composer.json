@@ -5,9 +5,18 @@
     "type"       : "wordpress-plugin",
     "license"    : "GPL-2.0+",
     "require"    : {
-        "composer/installers": "~1.0"
+        "php": ">=7.4",
+        "composer/installers": "^1.0 || ^2.0"
     },
     "require-dev": {
         "yoast/phpunit-polyfills": "^1.0"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4"
+        },
+        "allow-plugins": {
+            "composer/installers": true
+        }
     }
 }
