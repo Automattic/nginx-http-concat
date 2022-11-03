@@ -6,5 +6,8 @@
     "license"    : "GPL-2.0+",
     "require"    : {
         "composer/installers": "~1.0"
+    },
+    "require-dev": {
+        "yoast/phpunit-polyfills": "^1.0"
     }
 }
