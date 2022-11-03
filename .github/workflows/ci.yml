@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   test:
-    name: Run tests
+    name: 'Run tests (PHP ${{ matrix.php }}, WordPress ${{ matrix.wp }}, multisite: ${{ matrix.multisite }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
