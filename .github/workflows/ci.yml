@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: 'Run tests (PHP ${{ matrix.php }}, WordPress ${{ matrix.wp }}, multisite: ${{ matrix.multisite }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php:
+          - '7.4'
+          - '8.0'
+        wp:
+          - latest
+        multisite:
+          - 'no'
+        include:
+          - php: '7.4'
+            wp: latest
+            multisite: yes
+    services:
+      mysql:
+        image: ghcr.io/automattic/vip-container-images/mariadb-lite:10.3
+        ports:
+          - "3306:3306"
+        env:
+          MYSQL_ROOT_PASSWORD: wordpress
+          MARIADB_INITDB_SKIP_TZINFO: 1
+          MYSQL_USER: wordpress
+          MYSQL_PASSWORD: wordpress
+          MYSQL_DATABASE: wordpress_test
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.22.0
+        with:
+          php-version: ${{ matrix.php }}
+        env:
+          fail-fast: 'true'
+
+      - name: Install PHP Dependencies
+        uses: ramsey/composer-install@2.1.1
+
+      - name: Set up WordPress and WordPress Test Library
+        uses: sjinks/setup-wordpress-test-library@1.1.11
+        with:
+          version: ${{ matrix.wp }}
+
+      - name: Set up multisite mode
+        run: echo "WP_MULTISITE=1" >> $GITHUB_ENV
+        if: matrix.multisite == 'yes'
+
+      - name: Verify MariaDB connection
+        run: |
+          echo Waiting for MySQL to come online...
+          while ! mysqladmin ping -h 127.0.0.1 -P 3306 --silent; do
+            sleep 1
+          done
+        timeout-minutes: 1
+
+      - name: Run tests
+        run: vendor/bin/phpunit
