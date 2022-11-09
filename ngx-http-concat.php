@@ -177,16 +177,13 @@ foreach ( $args as $uri ) {
 
 		// The @charset rules must be on top of the output
 		if ( false !== strpos( $buf, '@charset' ) ) {
-			preg_replace_callback(
+			$buf = preg_replace_callback(
 				'/(?P<charset_rule>@charset\s+[\'"][^\'"]+[\'"];)/i',
 				function ( $match ) {
-					global $pre_output, $buf;
+					global $pre_output;
 
 					if ( 0 === strpos( $pre_output, '@charset' ) )
 						return '';
-
-					//strip $match[0] from $buf before adding $match[0] to beginning of $pre_output
-					$buf = str_replace($match[0], "", $buf);
 					
 					$pre_output = $match[0] . "\n" . $pre_output;
 
