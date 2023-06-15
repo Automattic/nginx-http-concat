@@ -86,8 +86,11 @@ if ( !in_array( $_SERVER['REQUEST_METHOD'], array( 'GET', 'HEAD' ) ) )
 // or
 // /_static/??-eJzTT8vP109KLNJLLi7W0QdyDEE8IK4CiVjn2hpZGluYmKcDABRMDPM=
 $args = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY );
-if ( ! $args || false === strpos( $args, '?' ) )
+
+if ( ! $args || false === strpos( $args, '?' ) ) {
+	error_log( 'Error 400 1 ' . $args );
 	concat_http_status_exit( 400 );
+}
 
 $args = substr( $args, strpos( $args, '?' ) + 1 );
 
@@ -99,6 +102,7 @@ if ( '-' == $args[0] ) {
 
 	// Invalid data, abort!
 	if ( false === $args ) {
+		error_log( 'Error 400 2 ' . $args );
 		concat_http_status_exit( 400 );
 	}
 }
