@@ -36,6 +36,21 @@ class WPcom_CSS_Concat extends WP_Styles {
 	}
 
 	function do_items( $handles = false, $group = false ) {
+		/*
+		 * When in an AMP response, prevent needlessly concatenating and minifying CSS because the AMP plugin does this automatically;
+		 * beyond this, the AMP plugin also does tree shaking to strip out CSS rules that do not apply to the current page, and the
+		 * resulting CSS from external stylesheets, style elements, and style attributes is then all combined into the one style[amp-custom].
+		 * This check prevents the AMP plugin from having to issue an HTTP request to fetch the contents of the concatenated stylesheet.
+		 *
+		 * Note that this is_amp_endpoint() check is done here at runtime instead of in css_concat_init() because it must be called
+		 * after the parse_query action in order to determine whether the response will be served as AMP or not. Note also that
+		 * this change only applies to sites that enable AMP theme support, as the classic AMP post templates do not use WP_Styles at all.
+		 * See <https://github.com/Automattic/amp-wp/wiki/Adding-Theme-Support>.
+		 */
+		if ( function_exists( 'is_amp_endpoint' ) && is_amp_endpoint() ) {
+			return $this->old_styles->do_items( $handles, $group );
+		}
+
 		$handles = false === $handles ? $this->queue : (array) $handles;
 		$stylesheets = array();
 		$siteurl = apply_filters( 'ngx_http_concat_site_url', $this->base_url );
