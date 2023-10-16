@@ -74,9 +74,10 @@ class WPcom_JS_Concat extends WP_Scripts {
 			}
 
 			if ( ! $this->registered[$handle]->src ) { // Defines a group.
-							if ( $this->has_inline_content( $handle ) && in_array( 'jquery', $this->registered[ $handle ]->deps ) ) {
+				if ( $this->has_inline_content( $handle ) && in_array( 'jquery', $this->registered[ $handle ]->deps ) ) {
 					continue;
 				}
+
 				if ( $this->do_item( $handle, $group ) ) {
 					$this->done[] = $handle;
 				}
