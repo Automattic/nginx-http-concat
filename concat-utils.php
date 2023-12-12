@@ -2,7 +2,7 @@
 
 class WPCOM_Concat_Utils {
 	public static function is_internal_url( $test_url, $site_url ) {
-		$test_url_parsed = parse_url( $test_url );
+		$test_url_parsed = parse_url( is_string( $test_url ) ? $test_url : '' );
 		$site_url_parsed = parse_url( $site_url );
 
 		if ( isset( $test_url_parsed['host'] )
