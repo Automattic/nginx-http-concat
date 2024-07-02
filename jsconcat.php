@@ -103,6 +103,7 @@ class WPcom_JS_Concat extends WP_Scripts {
 			// Don't try to concat externally hosted scripts
 			$is_internal_url = WPCOM_Concat_Utils::is_internal_url( $js_url, $siteurl );
 			if ( ! $is_internal_url ) {
+				do_action( 'qm/vip_concat_info', sprintf( '[js] Skipped: %s. Reason: not internal URL', $js_url ) );
 				$do_concat = false;
 			}
 
@@ -110,12 +111,14 @@ class WPcom_JS_Concat extends WP_Scripts {
 			// existing scripts that aren't outside ABSPATH
 			$js_realpath = WPCOM_Concat_Utils::realpath( $js_url, $siteurl );
 			if ( ! $js_realpath || 0 !== strpos( $js_realpath, ABSPATH ) ) {
+				do_action( 'qm/vip_concat_info', sprintf( '[js] Skipped: %s. Reason: outside ABSPATH', $js_url ) );
 				$do_concat = false;
 			} else {
 				$js_url_parsed['path'] = substr( $js_realpath, strlen( ABSPATH ) - 1 );
 			}
 
 			if ( $this->has_inline_content( $handle ) ) {
+				do_action( 'qm/vip_concat_info', sprintf( '[js] Skipped: %s. Reason: has inline content', $js_url ) );
 				$do_concat = false;
 			}
 
@@ -125,7 +128,11 @@ class WPcom_JS_Concat extends WP_Scripts {
 			}
 
 			// Allow plugins to disable concatenation of certain scripts.
-			$do_concat = apply_filters( 'js_do_concat', $do_concat, $handle );
+			$do_concat_after = apply_filters( 'js_do_concat', $do_concat, $handle );
+			if ( $do_concat && ! $do_concat_after ) {
+				do_action( 'qm/vip_concat_info', sprintf( '[js] Skipped: %s. Reason: filtered', $js_url ) );
+			}
+			$do_concat = $do_concat_after;
 
 			if ( true === $do_concat ) {
 				if ( !isset( $javascripts[$level] ) ) {
@@ -167,8 +174,16 @@ class WPcom_JS_Concat extends WP_Scripts {
 							$path_str = '-' . $path_64;
 					}
 
+					$count = count( $paths );
+					if ( $count > 150 ) {
+						do_action( 'qm/vip_concat_warn', sprintf( '[js] TOO LARGE Bundle %s contains %d items: %s', $path_str, $count, "\n" . implode("\n", $paths ) ) );
+					} else {
+						do_action( 'qm/vip_concat_info', sprintf( '[js] Bundle %s contains %d items: %s', $path_str, $count, "\n" . implode("\n", $paths ) ) );
+					}
+
 					$href = $siteurl . "/_static/??" . $path_str;
 				} elseif ( isset( $js_array['paths'] ) && is_array( $js_array['paths'] ) ) {
+					do_action( 'qm/vip_concat_info', sprintf( '[js] Skipped: %s. Reason: lonely (nothing to concatenate with)', implode( $js_array['paths'] ) ) );
 					$href = $this->cache_bust_mtime( $siteurl . $js_array['paths'][0], $siteurl );
 				}
 

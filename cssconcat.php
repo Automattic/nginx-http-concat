@@ -69,17 +69,20 @@ class WPcom_CSS_Concat extends WP_Styles {
 
 			// Don't try to concat styles which are loaded conditionally (like IE stuff)
 			if ( isset( $extra['conditional'] ) ) {
+				do_action( 'qm/vip_concat_info', sprintf( '[css] Skipped: %s. Reason: is conditional', $css_url ) );
 				$do_concat = false;
 			}
 
 			// Don't concat rtl stuff for now until concat supports it correctly
 			if ( 'rtl' === $this->text_direction && ! empty( $extra['rtl'] ) ) {
+				do_action( 'qm/vip_concat_info', sprintf( '[css] Skipped: %s. Reason: is rtl', $css_url ) );
 				$do_concat = false;
 			}
 
 			// Don't try to concat externally hosted scripts
 			$is_internal_url = WPCOM_Concat_Utils::is_internal_url( $css_url, $siteurl );
 			if ( ! $is_internal_url ) {
+				do_action( 'qm/vip_concat_info', sprintf( '[css] Skipped: %s. Reason: not internal url', $css_url ) );
 				$do_concat = false;
 			}
 
@@ -87,17 +90,25 @@ class WPcom_CSS_Concat extends WP_Styles {
 			// existing scripts that aren't outside ABSPATH
 			$css_realpath = WPCOM_Concat_Utils::realpath( $css_url, $siteurl );
 			if ( ! $css_realpath || 0 !== strpos( $css_realpath, ABSPATH ) ) {
+				if ( $css_url ) {
+					// check for url reduces noise of inline styles
+					do_action( 'qm/vip_concat_info', sprintf( '[css] Skipped: %s. Reason: outside ABSPATH', $css_url ) );
+				}
 				$do_concat = false;
 			} else {
 				$css_url_parsed['path'] = substr( $css_realpath, strlen( ABSPATH ) - 1 );
 			}
 
 			// Allow plugins to disable concatenation of certain stylesheets.
-			$do_concat = apply_filters( 'css_do_concat', $do_concat, $handle );
+			$do_concat_after = apply_filters( 'css_do_concat', $do_concat, $handle );
+			if ( $do_concat && ! $do_concat_after ) {
+				do_action( 'qm/vip_concat_info', sprintf( '[css] Skipped: %s. Reason: filtered', $css_url ) );
+			}
+			$do_concat = $do_concat_after;
 
 			if ( true === $do_concat ) {
 				$media = $obj->args;
-				if( empty( $media ) ) {
+				if ( empty( $media ) ) {
 					$media = 'all';
 				}
 				if ( ! isset( $stylesheets[ $stylesheet_group_index ] ) || ( isset( $stylesheets[ $stylesheet_group_index ] ) && ! is_array( $stylesheets[ $stylesheet_group_index ] ) ) ) {
@@ -136,8 +147,16 @@ class WPcom_CSS_Concat extends WP_Styles {
 						}
 					}
 
+					$count = count( $paths );
+					if ( $count > 150 ) {
+						do_action( 'qm/vip_concat_warn', sprintf( '[css] TOO LARGE Bundle %s contains %d items: %s', $path_str, $count, "\n" . implode("\n", $paths ) ) );
+					} else {
+						do_action( 'qm/vip_concat_info', sprintf( '[css] Bundle %s contains %d items: %s', $path_str, $count, "\n" . implode("\n", $paths ) ) );
+					}
+
 					$href = $siteurl . "/_static/??" . $path_str;
 				} else {
+					do_action( 'qm/vip_concat_info', sprintf( '[css] Skipped: %s. Reason: lonely (nothing to concatenate with)', implode( $css ) ) );
 					$href = $this->cache_bust_mtime( $siteurl . current( $css ), $siteurl );
 				}
 
@@ -207,3 +226,4 @@ function css_concat_init() {
 }
 
 add_action( 'init', 'css_concat_init' );
+
