@@ -10,8 +10,9 @@ Author URI: http://automattic.com/
 
 require_once( dirname( __FILE__ ) . '/concat-utils.php' );
 
-if ( ! defined( 'ALLOW_GZIP_COMPRESSION' ) )
+if ( ! defined( 'ALLOW_GZIP_COMPRESSION' ) ) {
 	define( 'ALLOW_GZIP_COMPRESSION', true );
+}
 
 class WPcom_CSS_Concat extends WP_Styles {
 	private $old_styles;
@@ -62,16 +63,19 @@ class WPcom_CSS_Concat extends WP_Styles {
 			$do_concat = false;
 
 			// Only try to concat static css files
-			if ( false !== strpos( $css_url_parsed['path'], '.css' ) )
+			if ( false !== strpos( $css_url_parsed['path'], '.css' ) ) {
 				$do_concat = true;
+			}
 
 			// Don't try to concat styles which are loaded conditionally (like IE stuff)
-			if ( isset( $extra['conditional'] ) )
+			if ( isset( $extra['conditional'] ) ) {
 				$do_concat = false;
+			}
 
 			// Don't concat rtl stuff for now until concat supports it correctly
-			if ( 'rtl' === $this->text_direction && ! empty( $extra['rtl'] ) )
+			if ( 'rtl' === $this->text_direction && ! empty( $extra['rtl'] ) ) {
 				$do_concat = false;
+			}
 
 			// Don't try to concat externally hosted scripts
 			$is_internal_url = WPCOM_Concat_Utils::is_internal_url( $css_url, $siteurl );
@@ -82,20 +86,23 @@ class WPcom_CSS_Concat extends WP_Styles {
 			// Concat and canonicalize the paths only for
 			// existing scripts that aren't outside ABSPATH
 			$css_realpath = WPCOM_Concat_Utils::realpath( $css_url, $siteurl );
-			if ( ! $css_realpath || 0 !== strpos( $css_realpath, ABSPATH ) )
+			if ( ! $css_realpath || 0 !== strpos( $css_realpath, ABSPATH ) ) {
 				$do_concat = false;
-			else
+			} else {
 				$css_url_parsed['path'] = substr( $css_realpath, strlen( ABSPATH ) - 1 );
+			}
 
 			// Allow plugins to disable concatenation of certain stylesheets.
 			$do_concat = apply_filters( 'css_do_concat', $do_concat, $handle );
 
 			if ( true === $do_concat ) {
 				$media = $obj->args;
-				if( empty( $media ) )
+				if( empty( $media ) ) {
 					$media = 'all';
-				if ( ! isset( $stylesheets[ $stylesheet_group_index ] ) || ( isset( $stylesheets[ $stylesheet_group_index ] ) && ! is_array( $stylesheets[ $stylesheet_group_index ] ) ) )
+				}
+				if ( ! isset( $stylesheets[ $stylesheet_group_index ] ) || ( isset( $stylesheets[ $stylesheet_group_index ] ) && ! is_array( $stylesheets[ $stylesheet_group_index ] ) ) ) {
 					$stylesheets[ $stylesheet_group_index ] = array();
+				}
 
 				$stylesheets[ $stylesheet_group_index ][ $media ][ $handle ] = $css_url_parsed['path'];
 				$this->done[] = $handle;
@@ -112,8 +119,9 @@ class WPcom_CSS_Concat extends WP_Styles {
 				if ( 'noconcat' == $media ) {
 
 					foreach( $css as $handle ) {
-						if ( $this->do_item( $handle, $group ) )
+						if ( $this->do_item( $handle, $group ) ) {
 							$this->done[] = $handle;
+						}
 					}
 					continue;
 				} elseif ( count( $css ) > 1) {
@@ -123,8 +131,9 @@ class WPcom_CSS_Concat extends WP_Styles {
 
 					if ( $this->allow_gzip_compression ) {
 						$path_64 = base64_encode( gzcompress( $path_str ) );
-						if ( strlen( $path_str ) > ( strlen( $path_64 ) + 1 ) )
+						if ( strlen( $path_str ) > ( strlen( $path_64 ) + 1 ) ) {
 							$path_str = '-' . $path_64;
+						}
 					}
 
 					$href = $siteurl . "/_static/??" . $path_str;
@@ -141,28 +150,33 @@ class WPcom_CSS_Concat extends WP_Styles {
 	}
 
 	function cache_bust_mtime( $url, $siteurl ) {
-		if ( strpos( $url, '?m=' ) )
+		if ( strpos( $url, '?m=' ) ) {
 			return $url;
+		}
 
 		$parts = parse_url( $url );
-		if ( ! isset( $parts['path'] ) || empty( $parts['path'] ) )
+		if ( ! isset( $parts['path'] ) || empty( $parts['path'] ) ) {
 			return $url;
+		}
 
 		$file = WPCOM_Concat_Utils::realpath( $url, $siteurl );
 
 		$mtime = false;
-		if ( file_exists( $file ) )
+		if ( file_exists( $file ) ) {
 			$mtime = filemtime( $file );
+		}
 
-		if ( ! $mtime )
+		if ( ! $mtime ) {
 			return $url;
+		}
 
 		if ( false === strpos( $url, '?' ) ) {
 			$q = '';
 		} else {
 			list( $url, $q ) = explode( '?', $url, 2 );
-			if ( strlen( $q ) )
+			if ( strlen( $q ) ) {
 				$q = '&amp;' . $q;
+			}
 		}
 
 		return "$url?m={$mtime}g{$q}";
