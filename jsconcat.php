@@ -129,6 +129,10 @@ class WPcom_JS_Concat extends WP_Scripts {
 				$javascripts[$level]['paths'][] = $js_url_parsed['path'];
 				$javascripts[$level]['handles'][] = $handle;
 
+				if ( count( $javascripts[$level]['paths'] ) > 100 ) {
+					$level++;
+				}
+
 			} else {
 				$level++;
 				$javascripts[$level]['type'] = 'do_item';
