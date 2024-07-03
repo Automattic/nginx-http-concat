@@ -2,7 +2,7 @@
 
 class WPCOM_Concat_Utils {
 	public static function is_internal_url( $test_url, $site_url ) {
-		$test_url_parsed = parse_url( $test_url );
+		$test_url_parsed = parse_url( is_string( $test_url ) ? $test_url : '' );
 		$site_url_parsed = parse_url( $site_url );
 
 		if ( isset( $test_url_parsed['host'] )
@@ -24,7 +24,7 @@ class WPCOM_Concat_Utils {
 		$url_path = parse_url( $url, PHP_URL_PATH );
 		$site_url_path = parse_url( $site_url, PHP_URL_PATH );
 		// To avoid partial matches; subdir install at `/wp` would match `/wp-includes`
-		$site_url_path = trailingslashit( $site_url_path );
+		$site_url_path = is_null( $site_url_path ) ? '/' : trailingslashit( $site_url_path );
 
 		// If this is a subdirectory site, we need to strip off the subdir from the URL.
 		// In a multisite install, the subdir is virtual and therefore not needed in the path.
