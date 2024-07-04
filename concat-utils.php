@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'VIP_CONCAT_MAX' ) ) {
+	define( 'VIP_CONCAT_MAX', 150 );
+}
+
 class WPCOM_Concat_Utils {
 	public static function is_internal_url( $test_url, $site_url ) {
 		$test_url_parsed = parse_url( is_string( $test_url ) ? $test_url : '' );

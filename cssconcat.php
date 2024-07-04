@@ -99,7 +99,7 @@ class WPcom_CSS_Concat extends WP_Styles {
 
 				$stylesheets[ $stylesheet_group_index ][ $media ][ $handle ] = $css_url_parsed['path'];
 
-				if ( count( $stylesheets[ $stylesheet_group_index ][ $media ] ) > 100 ) {
+				if ( count( $stylesheets[ $stylesheet_group_index ][ $media ] ) >= VIP_CONCAT_MAX ) {
 					$stylesheet_group_index++;
 				}
 				$this->done[] = $handle;

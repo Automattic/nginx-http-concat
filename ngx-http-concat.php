@@ -16,7 +16,6 @@ require_once( __DIR__ . '/cssmin/cssmin.php' );
 require_once( __DIR__ . '/concat-utils.php' );
 
 /* Config */
-$concat_max_files = 150;
 $concat_unique = true;
 $concat_types = array(
 	'css' => 'text/css',
@@ -114,7 +113,7 @@ if ( ! $args )
 	concat_http_status_exit( 400 );
 
 // array( '/foo/bar.css', '/foo1/bar/baz.css' )
-if ( 0 == count( $args ) || count( $args ) > $concat_max_files )
+if ( 0 == count( $args ) || count( $args ) > VIP_CONCAT_MAX )
 	concat_http_status_exit( 400 );
 
 // If we're in a subdirectory context, use that as the root.
