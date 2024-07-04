@@ -113,7 +113,7 @@ if ( ! $args )
 	concat_http_status_exit( 400 );
 
 // array( '/foo/bar.css', '/foo1/bar/baz.css' )
-if ( 0 == count( $args ) || count( $args ) > VIP_CONCAT_MAX )
+if ( 0 == count( $args ) || count( $args ) > WPCOM_Concat_Utils::get_concat_max() )
 	concat_http_status_exit( 400 );
 
 // If we're in a subdirectory context, use that as the root.

@@ -5,6 +5,12 @@ if ( ! defined( 'VIP_CONCAT_MAX' ) ) {
 }
 
 class WPCOM_Concat_Utils {
+
+	public static function get_concat_max() {
+		// no less than 10, no more than 150
+		return min( max( intval( VIP_CONCAT_MAX ), 10 ), 150 );
+	}
+
 	public static function is_internal_url( $test_url, $site_url ) {
 		$test_url_parsed = parse_url( is_string( $test_url ) ? $test_url : '' );
 		$site_url_parsed = parse_url( $site_url );
