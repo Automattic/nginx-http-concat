@@ -114,8 +114,19 @@ if ( ! $args )
 	concat_http_status_exit( 400 );
 
 // array( '/foo/bar.css', '/foo1/bar/baz.css' )
-if ( 0 == count( $args ) || count( $args ) > $concat_max_files )
+if ( 0 == count( $args ) || count( $args ) > $concat_max_files ) {
+	if ( count( $args ) > $concat_max_files ) {
+		trigger_error(
+			sprintf(
+				'Cannot concatenate over %d files in %s',
+				$concat_max_files,
+				$_SERVER['REQUEST_URI']
+			),
+			E_USER_WARNING
+		);
+	}
 	concat_http_status_exit( 400 );
+}
 
 // If we're in a subdirectory context, use that as the root.
 // We can't assume that the root serves the same content as the subdir.
