@@ -85,9 +85,18 @@ if ( !in_array( $_SERVER['REQUEST_METHOD'], array( 'GET', 'HEAD' ) ) )
 // /_static/??/foo/bar.css,/foo1/bar/baz.css?m=293847g
 // or
 // /_static/??-eJzTT8vP109KLNJLLi7W0QdyDEE8IK4CiVjn2hpZGluYmKcDABRMDPM=
-$args = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY );
-if ( ! $args || false === strpos( $args, '?' ) )
+// or url-encoded
+// /_static/?%3F%2Ffoo%2Fbar.css%2Cfoo1%2Fbar%2Fbaz.css%3Fm%3D293847g
+$args = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_QUERY );
+if ( ! $args ) {
 	concat_http_status_exit( 400 );
+}
+
+$args = rawurldecode( $args );
+
+if ( false === strpos( $args, '?' ) ) {
+	concat_http_status_exit( 400 );
+}
 
 $args = substr( $args, strpos( $args, '?' ) + 1 );
 
