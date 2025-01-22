@@ -98,6 +98,10 @@ class WPcom_CSS_Concat extends WP_Styles {
 					$stylesheets[ $stylesheet_group_index ] = array();
 
 				$stylesheets[ $stylesheet_group_index ][ $media ][ $handle ] = $css_url_parsed['path'];
+
+				if ( count( $stylesheets[ $stylesheet_group_index ][ $media ] ) >= WPCOM_Concat_Utils::get_concat_max() ) {
+					$stylesheet_group_index++;
+				}
 				$this->done[] = $handle;
 			} else {
 				$stylesheet_group_index++;
