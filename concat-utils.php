@@ -3,12 +3,7 @@ class WPCOM_Concat_Utils {
 	protected static int $concat_max = 150;
 
 	public static function get_concat_max() {
-		// no less than 10, no more than 150
-		return min( max( intval( self::$concat_max ), 10 ), 150 );
-	}
-
-	public static function set_concat_max( int $max ) {
-		self::$concat_max = $max;
+		return self::$concat_max;
 	}
 
 	public static function is_internal_url( $test_url, $site_url ) {

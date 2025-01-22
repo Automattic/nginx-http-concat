@@ -16,14 +16,12 @@ require_once( __DIR__ . '/cssmin/cssmin.php' );
 require_once( __DIR__ . '/concat-utils.php' );
 
 /* Config */
-// Maximum group size, anything over than that will be broken up into multiple groups
-$concat_max = 150;
+// Maximum group size is set in WPCOM_Concat_Utils::$concat_max, anything over than that will be spit into multiple groups
 $concat_unique = true;
 $concat_types = array(
 	'css' => 'text/css',
 	'js' => 'application/javascript'
 );
-WPCOM_Concat_Utils::set_concat_max( $concat_max );
 
 /* Constants */
 // By default determine the document root from this scripts path in the plugins dir (you can hardcode this define)
