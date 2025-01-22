@@ -168,13 +168,6 @@ foreach ( $args as $uri ) {
 		// url(relative/path/to/file) -> url(/absolute/and/not/relative/path/to/file)
 		$buf = WPCOM_Concat_Utils::relative_path_replace( $buf, $dirpath );
 
-		// AlphaImageLoader(...src='relative/path/to/file'...) -> AlphaImageLoader(...src='/absolute/path/to/file'...)
-		$buf = preg_replace(
-			'/(Microsoft.AlphaImageLoader\s*\([^\)]*src=(?:\'|")?)([^\/\'"\s\)](?:(?<!http:|https:).)*)\)/isU',
-			'$1' . ( $dirpath == '/' ? '/' : $dirpath . '/' ) . '$2)',
-			$buf
-		);
-
 		// The @charset rules must be on top of the output
 		if ( 0 === strpos( $buf, '@charset' ) ) {
 			preg_replace_callback(
