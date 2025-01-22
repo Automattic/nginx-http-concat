@@ -1,5 +1,6 @@
 <?php
 class WPCOM_Concat_Utils {
+	// Maximum group size, anything over that will be split into multiple groups
 	protected static int $concat_max = 150;
 
 	public static function get_concat_max() {
