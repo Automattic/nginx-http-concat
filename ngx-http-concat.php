@@ -178,15 +178,15 @@ foreach ( $args as $uri ) {
 		$buf = WPCOM_Concat_Utils::relative_path_replace( $buf, $dirpath );
 
 		// The @charset rules must be on top of the output
-		if ( 0 === strpos( $buf, '@charset' ) ) {
-			preg_replace_callback(
+		if ( false !== strpos( $buf, '@charset' ) ) {
+			$buf = preg_replace_callback(
 				'/(?P<charset_rule>@charset\s+[\'"][^\'"]+[\'"];)/i',
 				function ( $match ) {
 					global $pre_output;
 
 					if ( 0 === strpos( $pre_output, '@charset' ) )
 						return '';
-
+					
 					$pre_output = $match[0] . "\n" . $pre_output;
 
 					return '';
