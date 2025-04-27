@@ -74,6 +74,10 @@ class WPcom_JS_Concat extends WP_Scripts {
 			}
 
 			if ( ! $this->registered[$handle]->src ) { // Defines a group.
+				if ( $this->has_inline_content( $handle ) && in_array( 'jquery', $this->registered[ $handle ]->deps ) ) {
+					continue;
+				}
+
 				if ( $this->do_item( $handle, $group ) ) {
 					$this->done[] = $handle;
 				}
@@ -179,16 +183,16 @@ class WPcom_JS_Concat extends WP_Scripts {
 						echo $inline_before;
 					}
 				}
-			
+
 				// Allowed attributes taken from: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script
-				$allowed_attributes = array( 
-					'async', 
-					'defer', 
-					'nomodule', 
-					'crossorigin', 
-					'integrity', 
-					'type', 
-					'nonce', 
+				$allowed_attributes = array(
+					'async',
+					'defer',
+					'nomodule',
+					'crossorigin',
+					'integrity',
+					'type',
+					'nonce',
 					'referrerpolicy'
 				);
 				$attr_string = '';
@@ -204,7 +208,7 @@ class WPcom_JS_Concat extends WP_Scripts {
 				 */
 				foreach ( (array) apply_filters( 'js_concat_script_attributes', [], $href, $js_array, $this ) as $k => $v ) {
 					if ( is_int( $k ) && in_array( $v, $allowed_attributes ) ) {
-						$attr_string .= sprintf( ' %s', esc_attr( $v ) );	
+						$attr_string .= sprintf( ' %s', esc_attr( $v ) );
 					} else if ( array_search( $k, $allowed_attributes ) ){
 						$attr_string .= sprintf( ' %s="%s"', sanitize_key( is_int( $k ) ? $v : $k ), esc_attr( $v ) );
 					}
