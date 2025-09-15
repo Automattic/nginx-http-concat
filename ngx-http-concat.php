@@ -94,11 +94,9 @@ if ( ! $args ) {
 
 $args = rawurldecode( $args );
 
-if ( false === strpos( $args, '?' ) ) {
-	concat_http_status_exit( 400 );
+if ( 0 === strpos( $args, '?' ) ) {
+	$args = ltrim( $args, '?' );
 }
-
-$args = substr( $args, strpos( $args, '?' ) + 1 );
 
 // /foo/bar.css,/foo1/bar/baz.css?m=293847g
 // or
