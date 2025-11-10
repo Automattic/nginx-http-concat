@@ -326,6 +326,13 @@ class Minifier
             $css
         );
 
+        // Process mathematical expressions so their operators don't get accidentally minified
+        $css = preg_replace_callback(
+            '/\b\d*\.?\d+[a-z%]*\s*[\+\-\*\/]\s*\d*\.?\d+[a-z%]*\b/Si',
+            array($this, 'processMathematicalExpressionCallback'),
+            $css
+        );
+
         // Normalize all whitespace strings to single spaces. Easier to work with that way.
         $css = preg_replace('/\s+/S', ' ', $css);
         
@@ -452,6 +459,16 @@ class Minifier
         $match = str_ireplace('progid:DXImageTransform.Microsoft.Alpha(Opacity=', 'alpha(opacity=', $match);
 
         return $quote . $this->registerPreservedToken($match) . $quote;
+    }
+
+    /**
+     * Preserves mathematical expressions found
+     * @param array $matches
+     * @return string
+     */
+    private function processMathematicalExpressionCallback($matches)
+    {
+        return $this->registerPreservedToken($matches[0]);
     }
 
     /**
