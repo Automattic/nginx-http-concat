@@ -15,6 +15,10 @@
 require_once( __DIR__ . '/cssmin/cssmin.php' );
 require_once( __DIR__ . '/concat-utils.php' );
 
+if ( extension_loaded( 'newrelic' ) ) { // Ensure PHP agent is available
+	newrelic_ignore_transaction();
+}
+
 /* Config */
 // Maximum group size is set in WPCOM_Concat_Utils::$concat_max, anything over than that will be spit into multiple groups
 $concat_unique = true;
