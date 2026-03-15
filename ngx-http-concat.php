@@ -181,6 +181,17 @@ foreach ( $args as $uri ) {
 		// url(relative/path/to/file) -> url(/absolute/and/not/relative/path/to/file)
 		$buf = WPCOM_Concat_Utils::relative_path_replace( $buf, $dirpath );
 
+		// Try to detect if this is a likely minified file by looking at the average line length.
+		// If it's over 500 chars, we consider it minified and skip the minification step to avoid
+		// attempts to minify already minified files, which can cause long processing times and timeouts.
+		$lines = explode( "\n", $buf );
+		$avg_line_length = strlen( $buf ) / count( $lines );
+		if ( $avg_line_length > 500 ) {
+			$output .= $buf;
+			_doing_it_wrong( __FILE__, 'The file ' . $uri . ' appears to be already minified, skipping minification step.', false );
+			continue;
+		}
+
 		// The @charset rules must be on top of the output
 		if ( 0 === strpos( $buf, '@charset' ) ) {
 			preg_replace_callback(
