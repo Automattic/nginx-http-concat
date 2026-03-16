@@ -184,13 +184,10 @@ foreach ( $args as $uri ) {
 		// Try to detect if this is a likely minified file by looking at the average line length.
 		// If it's over 500 chars, we consider it minified and skip the minification step to avoid
 		// attempts to minify already minified files, which can cause long processing times and timeouts.
-		$lines = explode( "\n", $buf );
-		$avg_line_length = strlen( $buf ) / count( $lines );
-		if ( $avg_line_length > 500 ) {
-			$output .= $buf;
-			_doing_it_wrong( __FILE__, 'The file ' . $uri . ' appears to be already minified, skipping minification step.', false );
-			continue;
-		}
+		$is_likely_minified = false;
+		$line_count         = substr_count( $buf, "\n" ) + 1;
+		$avg_line_length    = strlen( $buf ) / $line_count;
+		$is_likely_minified = $avg_line_length > 500;
 
 		// The @charset rules must be on top of the output
 		if ( 0 === strpos( $buf, '@charset' ) ) {
@@ -230,7 +227,12 @@ foreach ( $args as $uri ) {
 			);
 		}
 
-		$buf = $css_minify->run( $buf );
+		if ( ! $is_likely_minified ) {
+			$buf = $css_minify->run( $buf );
+		} elseif ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			$safe_uri = rawurlencode( $uri );
+			error_log( 'ngx-http-concat: The file ' . $safe_uri . ' appears to be already minified, skipping minification step.' );
+		}
 	}
 
 	if ( 'application/javascript' == $mime_type )
