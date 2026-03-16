@@ -190,15 +190,15 @@ foreach ( $args as $uri ) {
 		$is_likely_minified = $avg_line_length > 500;
 
 		// The @charset rules must be on top of the output
-		if ( 0 === strpos( $buf, '@charset' ) ) {
-			preg_replace_callback(
+		if ( false !== strpos( $buf, '@charset' ) ) {
+			$buf = preg_replace_callback(
 				'/(?P<charset_rule>@charset\s+[\'"][^\'"]+[\'"];)/i',
 				function ( $match ) {
 					global $pre_output;
 
 					if ( 0 === strpos( $pre_output, '@charset' ) )
 						return '';
-
+					
 					$pre_output = $match[0] . "\n" . $pre_output;
 
 					return '';
