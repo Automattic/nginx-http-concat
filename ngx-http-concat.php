@@ -230,8 +230,7 @@ foreach ( $args as $uri ) {
 		if ( ! $is_likely_minified ) {
 			$buf = $css_minify->run( $buf );
 		} elseif ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			$safe_uri = rawurlencode( $uri );
-			error_log( 'ngx-http-concat: The file ' . $safe_uri . ' appears to be already minified, skipping minification step.' );
+			error_log( sprintf( 'ngx-http-concat: The file %s appears to be already minified, skipping minification step.', rawurlencode( $uri ) ) );
 		}
 	}
 
