@@ -90,6 +90,96 @@ class WPcom_JS_Concat__Source_Less_Order__TestCase extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( 'id="vip-concat-enabled-second-js"', $output );
 	}
 
+	public function test_source_less_handle_without_inline_emits_no_output() {
+		$alias  = 'vip-concat-no-inline-alias';
+		$first  = 'vip-concat-no-inline-first';
+		$second = 'vip-concat-no-inline-second';
+
+		$this->enqueue_script( $first, 'wp-util.js' );
+		$this->enqueue_script( $second, 'comment-reply.js' );
+		wp_register_script( $alias, false, array( $first, $second ), null );
+		wp_enqueue_script( $alias );
+
+		add_filter( 'js_do_concat', '__return_false' );
+
+		$output = $this->get_scripts_output();
+
+		$first_position  = strpos( $output, 'id="vip-concat-no-inline-first-js"' );
+		$second_position = strpos( $output, 'id="vip-concat-no-inline-second-js"' );
+
+		$this->assertNotFalse( $first_position, 'First dependency must be output.' );
+		$this->assertNotFalse( $second_position, 'Second dependency must be output.' );
+		$this->assertGreaterThan( $first_position, $second_position );
+
+		$this->assertStringNotContainsString( 'id="vip-concat-no-inline-alias-js"', $output );
+		$this->assertStringNotContainsString( 'id="vip-concat-no-inline-alias-js-before"', $output );
+		$this->assertStringNotContainsString( 'id="vip-concat-no-inline-alias-js-after"', $output );
+	}
+
+	public function test_do_items_preserves_source_less_handle_order_with_before_inline_position() {
+		$group  = 'vip-concat-source-less-before';
+		$first  = 'vip-concat-before-first';
+		$second = 'vip-concat-before-second';
+
+		$this->enqueue_script( $first, 'wp-util.js' );
+		$this->enqueue_script( $second, 'comment-reply.js' );
+		wp_register_script( $group, false, array( $first, $second ), null );
+		wp_add_inline_script( $group, 'window.vipConcatSourceLessBefore = true;', 'before' );
+		wp_enqueue_script( $group );
+
+		add_filter( 'js_do_concat', '__return_false' );
+
+		$output = $this->get_scripts_output();
+
+		$first_position = strpos( $output, 'id="vip-concat-before-first-js"' );
+		$second_position = strpos( $output, 'id="vip-concat-before-second-js"' );
+		$group_position = strpos( $output, 'id="vip-concat-source-less-before-js-before"' );
+
+		$this->assertNotFalse( $first_position );
+		$this->assertNotFalse( $second_position );
+		$this->assertNotFalse( $group_position );
+		$this->assertGreaterThan( $first_position, $second_position );
+		$this->assertGreaterThan( $second_position, $group_position );
+		$this->assertStringNotContainsString( 'id="vip-concat-source-less-before-js-after"', $output );
+	}
+
+	public function test_do_items_handles_multiple_consecutive_source_less_handles() {
+		$alias_one = 'vip-concat-multi-alias-one';
+		$alias_two = 'vip-concat-multi-alias-two';
+		$first     = 'vip-concat-multi-first';
+		$second    = 'vip-concat-multi-second';
+
+		// Both aliases share the same two deps. all_deps() will deduplicate them,
+		// producing to_do = [first, second, alias_one, alias_two].
+		$this->enqueue_script( $first, 'wp-util.js' );
+		$this->enqueue_script( $second, 'comment-reply.js' );
+		wp_register_script( $alias_one, false, array( $first, $second ), null );
+		wp_register_script( $alias_two, false, array( $first, $second ), null );
+		wp_add_inline_script( $alias_one, 'window.vipConcatAliasOne = true;' );
+		wp_add_inline_script( $alias_two, 'window.vipConcatAliasTwo = true;' );
+		wp_enqueue_script( $alias_one );
+		wp_enqueue_script( $alias_two );
+
+		add_filter( 'js_do_concat', '__return_false' );
+
+		$output = $this->get_scripts_output();
+
+		$first_position     = strpos( $output, 'id="vip-concat-multi-first-js"' );
+		$second_position    = strpos( $output, 'id="vip-concat-multi-second-js"' );
+		$alias_one_position = strpos( $output, 'id="vip-concat-multi-alias-one-js-after"' );
+		$alias_two_position = strpos( $output, 'id="vip-concat-multi-alias-two-js-after"' );
+
+		$this->assertNotFalse( $first_position );
+		$this->assertNotFalse( $second_position );
+		$this->assertNotFalse( $alias_one_position );
+		$this->assertNotFalse( $alias_two_position );
+		// Both deps appear before either alias's inline output.
+		$this->assertGreaterThan( $first_position, $alias_one_position );
+		$this->assertGreaterThan( $second_position, $alias_one_position );
+		// The two aliases maintain their enqueue order relative to each other.
+		$this->assertGreaterThan( $alias_one_position, $alias_two_position );
+	}
+
 	private function enqueue_script( $handle, $filename, $deps = array() ) {
 		$src = '/' . WPINC . '/js/' . $filename;
 
