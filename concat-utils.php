@@ -47,7 +47,17 @@ class WPCOM_Concat_Utils {
 	public static function relative_path_replace( $buf, $dirpath ) {
 		// url(relative/path/to/file) -> url(/absolute/and/not/relative/path/to/file)
 		$buf = preg_replace(
-			'/(:?\s*url\s*\()\s*(?:\'|")?\s*([^\/\'"\s\)](?:(?<!data:|http:|https:|[\(\'"]#|%23).)*)[\'"\s]*\)/isU',
+			'/'.
+				'(:?\s*url\s*\()'.                               // `: url(` give or take whitespace (matched group 1)
+				'\s*(?:\'|")?'.                                  // maybe whitespace and an opening quote
+				'\s*('.                                          // maybe whitespace
+					'[^\/\'"\s\)]'.                              // not /, ', ", \s, or )
+					'(?:'.
+						'(?<!data:|http:|https:|[\(\'"]#|%23)'.  // not start with protocols or #, (see "negative lookbehind" in regex docs)
+					'.)*'.                                       // anything.... (matched group 2)
+				')'.
+				'[\'"\s]*\)'.                                    // closing quote, paren
+			'/isU',
 			'$1' . ( $dirpath == '/' ? '/' : $dirpath . '/' ) . '$2)',
 			$buf
 		);
