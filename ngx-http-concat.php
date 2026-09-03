@@ -143,6 +143,7 @@ unset( $request_path, $_static_index );
 $last_modified = 0;
 $pre_output = '';
 $output = '';
+$had_utf8_bom = false;
 
 $css_minify = new tubalmartin\CssMin\Minifier;
 
@@ -174,6 +175,13 @@ foreach ( $args as $uri ) {
 	$buf = file_get_contents( $fullpath );
 	if ( false === $buf )
 		concat_http_status_exit( 500 );
+
+	// Remove the BOM before the code below reads $buf. The @charset test is at
+	// offset 0, and a BOM also breaks that test.
+	if ( WPCOM_Concat_Utils::has_utf8_bom( $buf ) ) {
+		$buf = WPCOM_Concat_Utils::strip_utf8_bom( $buf );
+		$had_utf8_bom = true;
+	}
 
 	if ( 'text/css' == $mime_type ) {
 		$dirpath = $subdir_path_prefix . dirname( $uri );
@@ -240,8 +248,17 @@ foreach ( $args as $uri ) {
 		$output .= "$buf";
 }
 
+// A BOM showed that a file is UTF-8, and the loop above removed it. Give that
+// encoding in the header to keep the declaration. The Content-Type charset has a
+// higher priority than a BOM and than an @charset rule. Set the charset only
+// after a BOM, because the encoding of other bundles is not known.
+$content_type = $mime_type;
+if ( $had_utf8_bom ) {
+	$content_type .= '; charset=UTF-8';
+}
+
 header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
 header( 'Content-Length: ' . ( strlen( $pre_output ) + strlen( $output ) ) );
-header( "Content-Type: $mime_type" );
+header( "Content-Type: $content_type" );
 
 echo $pre_output . $output;
