@@ -65,9 +65,11 @@ class WPCOM_Concat_Utils {
 	 * that character in a selector. The browser then adds it to the next
 	 * selector, and ignores that rule.
 	 *
-	 * The function removes more than one BOM, because some build tools add a BOM to
-	 * a file that already has one. It keeps a UTF-16 or UTF-32 BOM. Those bytes are
-	 * not valid in a UTF-8 bundle.
+	 * The function removes every BOM at the start, not only the first one, so the
+	 * buffer it returns has none. A second BOM is not an encoding signal. In any
+	 * file but the first it becomes the same stray character.
+	 *
+	 * It keeps a UTF-16 or UTF-32 BOM. Those bytes are not valid in a UTF-8 bundle.
 	 *
 	 * @see https://github.com/Automattic/nginx-http-concat/issues/49
 	 *

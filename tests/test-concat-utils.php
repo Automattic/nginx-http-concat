@@ -263,7 +263,7 @@ class WPCOM_Concat_Utils__Strip_Utf8_Bom__TestCase extends WP_UnitTestCase {
 				'',
 				true,
 			),
-			// Some build tools add a BOM to a file that already has one.
+			// Only a BOM at offset 0 is an encoding signal. The rest must go too.
 			'repeated_boms' => array(
 				self::BOM . self::BOM . self::BOM . '.a{color:red}',
 				'.a{color:red}',
