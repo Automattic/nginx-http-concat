@@ -263,7 +263,7 @@ class WPCOM_Concat_Utils__Strip_Utf8_Bom__TestCase extends WP_UnitTestCase {
 				'',
 				true,
 			),
-			// A file can be the result of an earlier concatenation.
+			// Some build tools add a BOM to a file that already has one.
 			'repeated_boms' => array(
 				self::BOM . self::BOM . self::BOM . '.a{color:red}',
 				'.a{color:red}',
