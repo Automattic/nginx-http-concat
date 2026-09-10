@@ -3,6 +3,9 @@ class WPCOM_Concat_Utils {
 	// Maximum group size, anything over that will be split into multiple groups
 	protected static int $concat_max = 150;
 
+	// UTF-8 byte order mark.
+	const UTF8_BOM = "\xEF\xBB\xBF";
+
 	public static function get_concat_max() {
 		return self::$concat_max;
 	}
@@ -42,6 +45,49 @@ class WPCOM_Concat_Utils {
 		}
 
 		return realpath( ABSPATH . $url_path );
+	}
+
+	/**
+	 * Tells if a buffer starts with a UTF-8 byte order mark.
+	 *
+	 * @param string $buf File contents.
+	 * @return bool
+	 */
+	public static function has_utf8_bom( $buf ) {
+		return 0 === strncmp( $buf, self::UTF8_BOM, strlen( self::UTF8_BOM ) );
+	}
+
+	/**
+	 * Removes UTF-8 byte order marks from the start of a buffer.
+	 *
+	 * A BOM gives the encoding only at offset 0. In a bundle, the BOM of a later
+	 * file becomes a U+FEFF character in the middle of the stream. CSS accepts
+	 * that character in a selector. The browser then adds it to the next
+	 * selector, and ignores that rule.
+	 *
+	 * The function removes every BOM at the start, not only the first one, so the
+	 * buffer it returns has none. A second BOM is not an encoding signal. In any
+	 * file but the first it becomes the same stray character.
+	 *
+	 * It keeps a UTF-16 or UTF-32 BOM. Those bytes are not valid in a UTF-8 bundle.
+	 *
+	 * @see https://github.com/Automattic/nginx-http-concat/issues/49
+	 *
+	 * @param string $buf File contents.
+	 * @return string The buffer without a BOM at the start.
+	 */
+	public static function strip_utf8_bom( $buf ) {
+		$bom_len = strlen( self::UTF8_BOM );
+		$len     = strlen( $buf );
+		$offset  = 0;
+
+		// Count the BOMs in one pass. A file of only BOMs then needs one copy.
+		while ( $offset + $bom_len <= $len
+			&& 0 === substr_compare( $buf, self::UTF8_BOM, $offset, $bom_len ) ) {
+			$offset += $bom_len;
+		}
+
+		return 0 === $offset ? $buf : substr( $buf, $offset );
 	}
 
 	public static function relative_path_replace( $buf, $dirpath ) {

@@ -206,3 +206,144 @@ class WPCOM_Concat_Utils__Replace_Relative_Url__TestCase extends WP_UnitTestCase
 		$this->assertSame( $expected, $actual );
 	}
 }
+
+class WPCOM_Concat_Utils__Strip_Utf8_Bom__TestCase extends WP_UnitTestCase {
+	const BOM = "\xEF\xBB\xBF";
+
+	function get_test_data() {
+		return array(
+			// Nothing to strip.
+			'empty_string' => array(
+				'',
+				'',
+				false,
+			),
+			'no_bom' => array(
+				'*{margin:0;padding:0}',
+				'*{margin:0;padding:0}',
+				false,
+			),
+			// The buffer is shorter than a BOM. The code must not read too far.
+			'single_byte' => array(
+				'a',
+				'a',
+				false,
+			),
+			'two_bytes' => array(
+				'ab',
+				'ab',
+				false,
+			),
+			// An incomplete BOM is not a BOM.
+			'partial_bom' => array(
+				"\xEF\xBB",
+				"\xEF\xBB",
+				false,
+			),
+			'partial_bom_then_text' => array(
+				"\xEF\xBBz",
+				"\xEF\xBBz",
+				false,
+			),
+			// The reported bug. A BOM is before the first rule of a file.
+			// https://github.com/Automattic/nginx-http-concat/issues/49
+			'bom_then_rule' => array(
+				self::BOM . '*{margin:0;padding:0}',
+				'*{margin:0;padding:0}',
+				true,
+			),
+			// The @charset test is at offset 0. A BOM breaks that test.
+			'bom_then_charset' => array(
+				self::BOM . '@charset "UTF-8";',
+				'@charset "UTF-8";',
+				true,
+			),
+			'bom_only' => array(
+				self::BOM,
+				'',
+				true,
+			),
+			// Only a BOM at offset 0 is an encoding signal. The rest must go too.
+			'repeated_boms' => array(
+				self::BOM . self::BOM . self::BOM . '.a{color:red}',
+				'.a{color:red}',
+				true,
+			),
+			// A BOM gives the encoding only at offset 0. In other positions it is content.
+			'bom_mid_stream_is_left_alone' => array(
+				'.a{color:red}' . self::BOM . '.b{color:blue}',
+				'.a{color:red}' . self::BOM . '.b{color:blue}',
+				false,
+			),
+			'bom_at_end_is_left_alone' => array(
+				'.a{color:red}' . self::BOM,
+				'.a{color:red}' . self::BOM,
+				false,
+			),
+			// UTF-16 and UTF-32 bytes are not valid in the bundle. Keep the BOM,
+			// because UTF-8 is the wrong encoding for that content.
+			'utf16_le_bom_untouched' => array(
+				"\xFF\xFE.a{color:red}",
+				"\xFF\xFE.a{color:red}",
+				false,
+			),
+			'utf16_be_bom_untouched' => array(
+				"\xFE\xFF.a{color:red}",
+				"\xFE\xFF.a{color:red}",
+				false,
+			),
+			// The first character has more than one byte, but it is not a BOM.
+			'leading_non_bom_multibyte_char' => array(
+				"\xE2\x86\x92.a{color:red}",
+				"\xE2\x86\x92.a{color:red}",
+				false,
+			),
+		);
+	}
+
+	/**
+	 * @dataProvider get_test_data
+	 */
+	function test__strip_utf8_bom( $test_string, $expected, $expected_has_bom ) {
+		$this->assertSame( $expected, WPCOM_Concat_Utils::strip_utf8_bom( $test_string ) );
+	}
+
+	/**
+	 * @dataProvider get_test_data
+	 */
+	function test__has_utf8_bom( $test_string, $expected, $expected_has_bom ) {
+		$this->assertSame( $expected_has_bom, WPCOM_Concat_Utils::has_utf8_bom( $test_string ) );
+	}
+
+	/**
+	 * A safe buffer has no BOM. Therefore a second call must make no change.
+	 *
+	 * @dataProvider get_test_data
+	 */
+	function test__strip_utf8_bom_is_idempotent( $test_string, $expected, $expected_has_bom ) {
+		$once = WPCOM_Concat_Utils::strip_utf8_bom( $test_string );
+
+		$this->assertSame( $once, WPCOM_Concat_Utils::strip_utf8_bom( $once ) );
+		$this->assertFalse( WPCOM_Concat_Utils::has_utf8_bom( $once ) );
+	}
+
+	/**
+	 * The stream must have no BOM after offset 0. The position of the file
+	 * with the BOM must not change this result.
+	 */
+	function test__concatenating_stripped_buffers_leaves_no_stray_bom() {
+		$files = array(
+			'body{color:red}',
+			self::BOM . '*{margin:0;padding:0}',
+			'.c{color:blue}',
+		);
+
+		$output = '';
+		foreach ( $files as $buf ) {
+			$output .= WPCOM_Concat_Utils::strip_utf8_bom( $buf );
+		}
+
+		$this->assertSame( 'body{color:red}*{margin:0;padding:0}.c{color:blue}', $output );
+		$this->assertStringNotContainsString( self::BOM, $output );
+	}
+}
