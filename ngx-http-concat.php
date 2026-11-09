@@ -252,11 +252,14 @@ foreach ( $args as $uri ) {
 // files: HTML cached before a deploy, or a server the deploy has not reached yet. Let
 // caches keep this response only briefly, rather than store these files under that
 // version. A short max-age instead of no-store keeps cached HTML from sending every
-// such request to origin until it expires.
+// such request to origin until it expires. Last-Modified is left out too: the newest
+// mtime can stay the same when the files change, so a cache revalidating with it
+// could get a 304 and keep this response.
 if ( null !== $requested_version && $requested_version !== WPCOM_Concat_Utils::get_group_version( $mtimes ) )
 	header( 'Cache-Control: max-age=60' );
+else
+	header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
 
-header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
 header( 'Content-Length: ' . ( strlen( $pre_output ) + strlen( $output ) ) );
 header( "Content-Type: $mime_type" );
 
