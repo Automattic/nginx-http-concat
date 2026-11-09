@@ -120,7 +120,7 @@ if ( '-' == $args[0] ) {
 $version_string_pos = strpos( $args, '?' );
 $requested_version = null;
 if ( false !== $version_string_pos ) {
-	// m= is the group version when the page was rendered; see WPCOM_Concat_Utils::get_group_version().
+	// m= is the group version when the page was rendered; see WPCOM_Concat_Utils::get_version().
 	// Older pages carry the newest mtime instead, which can't be checked, so they are left as before.
 	if ( preg_match( '/^m=([0-9a-f]{12})(?![0-9a-f])/', substr( $args, $version_string_pos + 1 ), $version_match ) )
 		$requested_version = $version_match[1];
@@ -255,7 +255,7 @@ foreach ( $args as $uri ) {
 // such request to origin until it expires. Last-Modified is left out too: the newest
 // mtime can stay the same when the files change, so a cache revalidating with it
 // could get a 304 and keep this response.
-if ( null !== $requested_version && $requested_version !== WPCOM_Concat_Utils::get_group_version( $fullpaths ) )
+if ( null !== $requested_version && $requested_version !== WPCOM_Concat_Utils::get_version( $fullpaths ) )
 	header( 'Cache-Control: max-age=60' );
 else
 	header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );

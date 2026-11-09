@@ -8,17 +8,19 @@ class WPCOM_Concat_Utils {
 	}
 
 	/**
-	 * Version of a concat group, sent as its m= argument: a digest of every
-	 * member's mtime and size, in URL order. The newest mtime alone stays the
-	 * same when a member changes to an older-dated file (e.g. a submodule or
-	 * WordPress version switch), which would leave caches serving the previous
-	 * group under it. mtime and size are what rsync's quick check compares, so
-	 * a file that a deploy synced this way changes the version. Hashing the
-	 * contents would read every member on each page render.
+	 * Version of a concat group or single file, sent as its m= argument: a
+	 * digest of every file's mtime and size, in URL order. The newest mtime
+	 * alone stays the same when a member changes to an older-dated file (e.g. a
+	 * submodule or WordPress version switch), and an mtime alone stays the same
+	 * when a file changes to another version with the same mtime, which would
+	 * leave caches serving the previous files under it. mtime and size are what
+	 * rsync's quick check compares, so a file that a deploy synced this way
+	 * changes the version. Hashing the contents would read every file on each
+	 * page render.
 	 * ngx-http-concat.php relies on the 12-character length to tell it from the
 	 * older mtime versions.
 	 */
-	public static function get_group_version( array $paths ) {
+	public static function get_version( array $paths ) {
 		$stats = array();
 		foreach ( $paths as $path )
 			$stats[] = filemtime( $path ) . ':' . filesize( $path );

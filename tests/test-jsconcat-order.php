@@ -181,66 +181,58 @@ class WPcom_JS_Concat__Source_Less_Order__TestCase extends WP_UnitTestCase {
 	}
 
 	public function test_group_version_changes_when_an_older_member_changes() {
-		$first_file  = 'vip-concat-version-first.js';
-		$second_file = 'vip-concat-version-second.js';
-
-		$this->create_concat_test_script( $first_file );
-		$this->create_concat_test_script( $second_file );
-
-		if ( 0 !== strpos( WPCOM_Concat_Utils::realpath( '/' . $first_file, site_url() ), ABSPATH ) ) {
-			$this->markTestSkipped( 'This WordPress test install resolves ABSPATH through a symlink, so test scripts are not concat eligible.' );
-		}
-
-		// Members dated independently, e.g. from different repositories.
-		touch( ABSPATH . $first_file, 1600000000 );
-		touch( ABSPATH . $second_file, 1700000000 );
-		$before = $this->get_concat_url( $first_file, $second_file );
+		$this->create_version_test_scripts();
+		$before = $this->get_version_test_src( true );
 
 		// The older member changes to a file that is still older than the newest one.
-		touch( ABSPATH . $first_file, 1650000000 );
+		touch( ABSPATH . 'vip-concat-version-first.js', 1650000000 );
 		clearstatcache();
-		$after = $this->get_concat_url( $first_file, $second_file );
 
-		$this->assertNotSame( $before, $after );
+		$this->assertNotSame( $before, $this->get_version_test_src( true ) );
 	}
 
-	public function test_group_version_changes_when_a_member_changes_without_its_mtime() {
-		$first_file  = 'vip-concat-version-first.js';
-		$second_file = 'vip-concat-version-second.js';
+	public function test_version_changes_when_a_file_changes_without_its_mtime() {
+		$this->create_version_test_scripts();
+		$group_before  = $this->get_version_test_src( true );
+		$single_before = $this->get_version_test_src( false );
 
-		$this->create_concat_test_script( $first_file );
-		$this->create_concat_test_script( $second_file );
+		// Another version of the file with the same mtime, e.g. from another repository.
+		file_put_contents( ABSPATH . 'vip-concat-version-first.js', 'window.vipConcatVersionFirst = 2;' );
+		touch( ABSPATH . 'vip-concat-version-first.js', 1600000000 );
+		clearstatcache();
 
-		if ( 0 !== strpos( WPCOM_Concat_Utils::realpath( '/' . $first_file, site_url() ), ABSPATH ) ) {
+		$this->assertNotSame( $group_before, $this->get_version_test_src( true ) );
+		$this->assertNotSame( $single_before, $this->get_version_test_src( false ) );
+	}
+
+	// Two scripts dated independently, e.g. from different repositories.
+	private function create_version_test_scripts() {
+		$this->create_concat_test_script( 'vip-concat-version-first.js' );
+		$this->create_concat_test_script( 'vip-concat-version-second.js' );
+
+		if ( 0 !== strpos( WPCOM_Concat_Utils::realpath( '/vip-concat-version-first.js', site_url() ), ABSPATH ) ) {
 			$this->markTestSkipped( 'This WordPress test install resolves ABSPATH through a symlink, so test scripts are not concat eligible.' );
 		}
 
-		touch( ABSPATH . $first_file, 1600000000 );
-		touch( ABSPATH . $second_file, 1700000000 );
-		$before = $this->get_concat_url( $first_file, $second_file );
-
-		// Another version of the file with the same mtime, e.g. from another repository.
-		file_put_contents( ABSPATH . $first_file, 'window.vipConcatVersionFirst = 2;' );
-		touch( ABSPATH . $first_file, 1600000000 );
-		clearstatcache();
-		$after = $this->get_concat_url( $first_file, $second_file );
-
-		$this->assertNotSame( $before, $after );
+		touch( ABSPATH . 'vip-concat-version-first.js', 1600000000 );
+		touch( ABSPATH . 'vip-concat-version-second.js', 1700000000 );
 	}
 
-	private function get_concat_url( $first_file, $second_file ) {
+	// The src printed for both version test scripts as a concat group, or for the first one alone.
+	private function get_version_test_src( $group ) {
 		global $wp_scripts;
 
 		$wp_scripts                         = new WPcom_JS_Concat( new WP_Scripts() );
 		$wp_scripts->allow_gzip_compression = false;
 		$wp_scripts->base_url               = site_url();
 
-		wp_enqueue_script( 'vip-concat-version-first', '/' . $first_file, array(), null );
-		wp_enqueue_script( 'vip-concat-version-second', '/' . $second_file, array(), null );
+		wp_enqueue_script( 'vip-concat-version-first', '/vip-concat-version-first.js', array(), null );
+		if ( $group )
+			wp_enqueue_script( 'vip-concat-version-second', '/vip-concat-version-second.js', array(), null );
 
-		$this->assertSame( 1, preg_match( '#/_static/\?\?/[^"\']+#', $this->get_scripts_output(), $match ) );
+		$this->assertSame( 1, preg_match( '#src=["\']([^"\']*vip-concat-version[^"\']*)#', $this->get_scripts_output(), $match ) );
 
-		return $match[0];
+		return $match[1];
 	}
 
 	private function enqueue_script( $handle, $filename, $deps = array() ) {
