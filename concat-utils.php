@@ -12,6 +12,8 @@ class WPCOM_Concat_Utils {
 	 * member's mtime, in URL order. The newest mtime alone stays the same when a
 	 * member changes to an older-dated file (e.g. a submodule or WordPress version
 	 * switch), which would leave caches serving the previous group under it.
+	 * ngx-http-concat.php relies on the 12-character length to tell it from the
+	 * older mtime versions.
 	 */
 	public static function get_group_version( array $mtimes ) {
 		return substr( md5( implode( ',', $mtimes ) ), 0, 12 );

@@ -121,7 +121,8 @@ $version_string_pos = strpos( $args, '?' );
 $requested_version = null;
 if ( false !== $version_string_pos ) {
 	// m= is the group version when the page was rendered; see WPCOM_Concat_Utils::get_group_version().
-	if ( preg_match( '/^m=([0-9a-f]+)/', substr( $args, $version_string_pos + 1 ), $version_match ) )
+	// Older pages carry the newest mtime instead, which can't be checked, so they are left as before.
+	if ( preg_match( '/^m=([0-9a-f]{12})(?![0-9a-f])/', substr( $args, $version_string_pos + 1 ), $version_match ) )
 		$requested_version = $version_match[1];
 	$args = substr( $args, 0, $version_string_pos );
 }
