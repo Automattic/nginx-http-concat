@@ -20,10 +20,11 @@ class WPCOM_Concat_Utils {
 	 * older mtime versions.
 	 */
 	public static function get_version( array $paths ) {
-		$hashes = array();
-		foreach ( $paths as $path )
-			$hashes[] = md5_file( $path );
+		return self::get_version_from_hashes( array_map( 'md5_file', $paths ) );
+	}
 
+	// get_version() from each file's md5, for callers that already hold the contents.
+	public static function get_version_from_hashes( array $hashes ) {
 		return substr( md5( implode( ',', $hashes ) ), 0, 12 );
 	}
 

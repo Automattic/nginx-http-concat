@@ -147,7 +147,7 @@ if ( $_static_index > 0 ) {
 unset( $request_path, $_static_index );
 
 $last_modified = 0;
-$fullpaths = array();
+$hashes = array();
 $pre_output = '';
 $output = '';
 
@@ -175,13 +175,16 @@ foreach ( $args as $uri ) {
 	if ( false === $stat )
 		concat_http_status_exit( 500 );
 
-	$fullpaths[] = $fullpath;
 	if ( $stat['mtime'] > $last_modified )
 		$last_modified = $stat['mtime'];
 
 	$buf = file_get_contents( $fullpath );
 	if ( false === $buf )
 		concat_http_status_exit( 500 );
+
+	// Hashed from the bytes read, before the changes below, so the version check
+	// matches the files this response is built from even if a deploy replaces one.
+	$hashes[] = md5( $buf );
 
 	if ( 'text/css' == $mime_type ) {
 		$dirpath = $subdir_path_prefix . dirname( $uri );
@@ -255,7 +258,7 @@ foreach ( $args as $uri ) {
 // such request to origin until it expires. Last-Modified is left out too: the newest
 // mtime can stay the same when the files change, so a cache revalidating with it
 // could get a 304 and keep this response.
-if ( null !== $requested_version && $requested_version !== WPCOM_Concat_Utils::get_version( $fullpaths ) )
+if ( null !== $requested_version && $requested_version !== WPCOM_Concat_Utils::get_version_from_hashes( $hashes ) )
 	header( 'Cache-Control: max-age=60' );
 else
 	header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
