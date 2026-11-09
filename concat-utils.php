@@ -7,6 +7,16 @@ class WPCOM_Concat_Utils {
 		return self::$concat_max;
 	}
 
+	/**
+	 * Version of a concat group, sent as its m= argument: a digest of every
+	 * member's mtime, in URL order. The newest mtime alone stays the same when a
+	 * member changes to an older-dated file (e.g. a submodule or WordPress version
+	 * switch), which would leave caches serving the previous group under it.
+	 */
+	public static function get_group_version( array $mtimes ) {
+		return substr( md5( implode( ',', $mtimes ) ), 0, 12 );
+	}
+
 	public static function is_internal_url( $test_url, $site_url ) {
 		$test_url_parsed = parse_url( is_string( $test_url ) ? $test_url : '' );
 		$site_url_parsed = parse_url( $site_url );

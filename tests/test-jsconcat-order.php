@@ -180,6 +180,45 @@ class WPcom_JS_Concat__Source_Less_Order__TestCase extends WP_UnitTestCase {
 		$this->assertGreaterThan( $alias_one_position, $alias_two_position );
 	}
 
+	public function test_group_version_changes_when_an_older_member_changes() {
+		$first_file  = 'vip-concat-version-first.js';
+		$second_file = 'vip-concat-version-second.js';
+
+		$this->create_concat_test_script( $first_file );
+		$this->create_concat_test_script( $second_file );
+
+		if ( 0 !== strpos( WPCOM_Concat_Utils::realpath( '/' . $first_file, site_url() ), ABSPATH ) ) {
+			$this->markTestSkipped( 'This WordPress test install resolves ABSPATH through a symlink, so test scripts are not concat eligible.' );
+		}
+
+		// Members dated independently, e.g. from different repositories.
+		touch( ABSPATH . $first_file, 1600000000 );
+		touch( ABSPATH . $second_file, 1700000000 );
+		$before = $this->get_concat_url( $first_file, $second_file );
+
+		// The older member changes to a file that is still older than the newest one.
+		touch( ABSPATH . $first_file, 1650000000 );
+		clearstatcache();
+		$after = $this->get_concat_url( $first_file, $second_file );
+
+		$this->assertNotSame( $before, $after );
+	}
+
+	private function get_concat_url( $first_file, $second_file ) {
+		global $wp_scripts;
+
+		$wp_scripts                         = new WPcom_JS_Concat( new WP_Scripts() );
+		$wp_scripts->allow_gzip_compression = false;
+		$wp_scripts->base_url               = site_url();
+
+		wp_enqueue_script( 'vip-concat-version-first', '/' . $first_file, array(), null );
+		wp_enqueue_script( 'vip-concat-version-second', '/' . $second_file, array(), null );
+
+		$this->assertSame( 1, preg_match( '#/_static/\?\?/[^"\']+#', $this->get_scripts_output(), $match ) );
+
+		return $match[0];
+	}
+
 	private function enqueue_script( $handle, $filename, $deps = array() ) {
 		$src = '/' . WPINC . '/js/' . $filename;
 

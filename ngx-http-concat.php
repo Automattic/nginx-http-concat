@@ -118,8 +118,13 @@ if ( '-' == $args[0] ) {
 
 // /foo/bar.css,/foo1/bar/baz.css?m=293847g
 $version_string_pos = strpos( $args, '?' );
-if ( false !== $version_string_pos )
+$requested_version = null;
+if ( false !== $version_string_pos ) {
+	// m= is the group version when the page was rendered; see WPCOM_Concat_Utils::get_group_version().
+	if ( preg_match( '/^m=([0-9a-f]+)/', substr( $args, $version_string_pos + 1 ), $version_match ) )
+		$requested_version = $version_match[1];
 	$args = substr( $args, 0, $version_string_pos );
+}
 
 // /foo/bar.css,/foo1/bar/baz.css
 $args = explode( ',', $args );
@@ -141,6 +146,7 @@ if ( $_static_index > 0 ) {
 unset( $request_path, $_static_index );
 
 $last_modified = 0;
+$mtimes = array();
 $pre_output = '';
 $output = '';
 
@@ -168,6 +174,7 @@ foreach ( $args as $uri ) {
 	if ( false === $stat )
 		concat_http_status_exit( 500 );
 
+	$mtimes[] = $stat['mtime'];
 	if ( $stat['mtime'] > $last_modified )
 		$last_modified = $stat['mtime'];
 
@@ -239,6 +246,14 @@ foreach ( $args as $uri ) {
 	else
 		$output .= "$buf";
 }
+
+// A version that does not match these files means the page was rendered from other
+// files: HTML cached before a deploy, or a server the deploy has not reached yet. Let
+// caches keep this response only briefly, rather than store these files under that
+// version. A short max-age instead of no-store keeps cached HTML from sending every
+// such request to origin until it expires.
+if ( null !== $requested_version && $requested_version !== WPCOM_Concat_Utils::get_group_version( $mtimes ) )
+	header( 'Cache-Control: max-age=60' );
 
 header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
 header( 'Content-Length: ' . ( strlen( $pre_output ) + strlen( $output ) ) );
