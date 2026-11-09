@@ -125,7 +125,7 @@ class WPcom_CSS_Concat extends WP_Styles {
 					continue;
 				} elseif ( count( $css ) > 1) {
 					$paths = array_map( function( $url ) { return ABSPATH . $url; }, $css );
-					$version = WPCOM_Concat_Utils::get_group_version( array_map( 'filemtime', $paths ) );
+					$version = WPCOM_Concat_Utils::get_group_version( $paths );
 					$path_str = implode( ',', $css ) . "?m={$version}";
 
 					if ( $this->allow_gzip_compression ) {

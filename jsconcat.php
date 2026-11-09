@@ -160,7 +160,7 @@ class WPcom_JS_Concat extends WP_Scripts {
 
 				if ( isset( $js_array['paths'] ) && count( $js_array['paths'] ) > 1) {
 					$paths = array_map( function( $url ) { return ABSPATH . $url; }, $js_array['paths'] );
-					$version = WPCOM_Concat_Utils::get_group_version( array_map( 'filemtime', $paths ) );
+					$version = WPCOM_Concat_Utils::get_group_version( $paths );
 					$path_str = implode( ',', $js_array['paths'] ) . "?m={$version}j";
 
 					if ( $this->allow_gzip_compression ) {

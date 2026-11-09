@@ -204,6 +204,30 @@ class WPcom_JS_Concat__Source_Less_Order__TestCase extends WP_UnitTestCase {
 		$this->assertNotSame( $before, $after );
 	}
 
+	public function test_group_version_changes_when_a_member_changes_without_its_mtime() {
+		$first_file  = 'vip-concat-version-first.js';
+		$second_file = 'vip-concat-version-second.js';
+
+		$this->create_concat_test_script( $first_file );
+		$this->create_concat_test_script( $second_file );
+
+		if ( 0 !== strpos( WPCOM_Concat_Utils::realpath( '/' . $first_file, site_url() ), ABSPATH ) ) {
+			$this->markTestSkipped( 'This WordPress test install resolves ABSPATH through a symlink, so test scripts are not concat eligible.' );
+		}
+
+		touch( ABSPATH . $first_file, 1600000000 );
+		touch( ABSPATH . $second_file, 1700000000 );
+		$before = $this->get_concat_url( $first_file, $second_file );
+
+		// Another version of the file with the same mtime, e.g. from another repository.
+		file_put_contents( ABSPATH . $first_file, 'window.vipConcatVersionFirst = 2;' );
+		touch( ABSPATH . $first_file, 1600000000 );
+		clearstatcache();
+		$after = $this->get_concat_url( $first_file, $second_file );
+
+		$this->assertNotSame( $before, $after );
+	}
+
 	private function get_concat_url( $first_file, $second_file ) {
 		global $wp_scripts;
 

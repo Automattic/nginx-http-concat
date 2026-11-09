@@ -147,7 +147,7 @@ if ( $_static_index > 0 ) {
 unset( $request_path, $_static_index );
 
 $last_modified = 0;
-$mtimes = array();
+$fullpaths = array();
 $pre_output = '';
 $output = '';
 
@@ -175,7 +175,7 @@ foreach ( $args as $uri ) {
 	if ( false === $stat )
 		concat_http_status_exit( 500 );
 
-	$mtimes[] = $stat['mtime'];
+	$fullpaths[] = $fullpath;
 	if ( $stat['mtime'] > $last_modified )
 		$last_modified = $stat['mtime'];
 
@@ -255,7 +255,7 @@ foreach ( $args as $uri ) {
 // such request to origin until it expires. Last-Modified is left out too: the newest
 // mtime can stay the same when the files change, so a cache revalidating with it
 // could get a 304 and keep this response.
-if ( null !== $requested_version && $requested_version !== WPCOM_Concat_Utils::get_group_version( $mtimes ) )
+if ( null !== $requested_version && $requested_version !== WPCOM_Concat_Utils::get_group_version( $fullpaths ) )
 	header( 'Cache-Control: max-age=60' );
 else
 	header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
