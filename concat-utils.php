@@ -9,23 +9,22 @@ class WPCOM_Concat_Utils {
 
 	/**
 	 * Version of a concat group or single file, sent as its m= argument: a
-	 * digest of every file's mtime and size, in URL order. The newest mtime
-	 * alone stays the same when a member changes to an older-dated file (e.g. a
-	 * submodule or WordPress version switch), and an mtime alone stays the same
-	 * when a file changes to another version with the same mtime, which would
-	 * leave caches serving the previous files under it. mtime and size are what
-	 * rsync's quick check compares, so a file that a deploy synced this way
-	 * changes the version. Hashing the contents would read every file on each
-	 * page render.
+	 * digest of every file's contents, in URL order, so the URL changes
+	 * whenever the bytes served under it do. File times can't promise that:
+	 * the newest mtime stays the same when a member changes to an older-dated
+	 * file (e.g. a submodule or WordPress version switch), and two versions of
+	 * a file can share an mtime and size, so caches would keep serving the
+	 * previous files under the same URL. This reads every file on each page
+	 * render that prints them.
 	 * ngx-http-concat.php relies on the 12-character length to tell it from the
 	 * older mtime versions.
 	 */
 	public static function get_version( array $paths ) {
-		$stats = array();
+		$hashes = array();
 		foreach ( $paths as $path )
-			$stats[] = filemtime( $path ) . ':' . filesize( $path );
+			$hashes[] = md5_file( $path );
 
-		return substr( md5( implode( ',', $stats ) ), 0, 12 );
+		return substr( md5( implode( ',', $hashes ) ), 0, 12 );
 	}
 
 	public static function is_internal_url( $test_url, $site_url ) {

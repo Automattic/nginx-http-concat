@@ -180,25 +180,16 @@ class WPcom_JS_Concat__Source_Less_Order__TestCase extends WP_UnitTestCase {
 		$this->assertGreaterThan( $alias_one_position, $alias_two_position );
 	}
 
-	public function test_group_version_changes_when_an_older_member_changes() {
-		$this->create_version_test_scripts();
-		$before = $this->get_version_test_src( true );
-
-		// The older member changes to a file that is still older than the newest one.
-		touch( ABSPATH . 'vip-concat-version-first.js', 1650000000 );
-		clearstatcache();
-
-		$this->assertNotSame( $before, $this->get_version_test_src( true ) );
-	}
-
-	public function test_version_changes_when_a_file_changes_without_its_mtime() {
+	public function test_version_changes_when_a_file_changes_without_its_mtime_or_size() {
 		$this->create_version_test_scripts();
 		$group_before  = $this->get_version_test_src( true );
 		$single_before = $this->get_version_test_src( false );
 
-		// Another version of the file with the same mtime, e.g. from another repository.
-		file_put_contents( ABSPATH . 'vip-concat-version-first.js', 'window.vipConcatVersionFirst = 2;' );
-		touch( ABSPATH . 'vip-concat-version-first.js', 1600000000 );
+		// Another version of the older member with the same length and mtime, e.g. from
+		// another repository. The newest mtime, and every mtime and size, stay the same.
+		$file = ABSPATH . 'vip-concat-version-first.js';
+		file_put_contents( $file, str_replace( 'true', 'null', file_get_contents( $file ) ) );
+		touch( $file, 1600000000 );
 		clearstatcache();
 
 		$this->assertNotSame( $group_before, $this->get_version_test_src( true ) );
