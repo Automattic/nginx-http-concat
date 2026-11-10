@@ -180,6 +180,52 @@ class WPcom_JS_Concat__Source_Less_Order__TestCase extends WP_UnitTestCase {
 		$this->assertGreaterThan( $alias_one_position, $alias_two_position );
 	}
 
+	public function test_version_changes_when_a_file_changes_without_its_mtime_or_size() {
+		$this->create_version_test_scripts();
+		$group_before  = $this->get_version_test_src( true );
+		$single_before = $this->get_version_test_src( false );
+
+		// Another version of the older member with the same length and mtime, e.g. from
+		// another repository. The newest mtime, and every mtime and size, stay the same.
+		$file = ABSPATH . 'vip-concat-version-first.js';
+		file_put_contents( $file, str_replace( 'true', 'null', file_get_contents( $file ) ) );
+		touch( $file, 1600000000 );
+		clearstatcache();
+
+		$this->assertNotSame( $group_before, $this->get_version_test_src( true ) );
+		$this->assertNotSame( $single_before, $this->get_version_test_src( false ) );
+	}
+
+	// Two scripts dated independently, e.g. from different repositories.
+	private function create_version_test_scripts() {
+		$this->create_concat_test_script( 'vip-concat-version-first.js' );
+		$this->create_concat_test_script( 'vip-concat-version-second.js' );
+
+		if ( 0 !== strpos( WPCOM_Concat_Utils::realpath( '/vip-concat-version-first.js', site_url() ), ABSPATH ) ) {
+			$this->markTestSkipped( 'This WordPress test install resolves ABSPATH through a symlink, so test scripts are not concat eligible.' );
+		}
+
+		touch( ABSPATH . 'vip-concat-version-first.js', 1600000000 );
+		touch( ABSPATH . 'vip-concat-version-second.js', 1700000000 );
+	}
+
+	// The src printed for both version test scripts as a concat group, or for the first one alone.
+	private function get_version_test_src( $group ) {
+		global $wp_scripts;
+
+		$wp_scripts                         = new WPcom_JS_Concat( new WP_Scripts() );
+		$wp_scripts->allow_gzip_compression = false;
+		$wp_scripts->base_url               = site_url();
+
+		wp_enqueue_script( 'vip-concat-version-first', '/vip-concat-version-first.js', array(), null );
+		if ( $group )
+			wp_enqueue_script( 'vip-concat-version-second', '/vip-concat-version-second.js', array(), null );
+
+		$this->assertSame( 1, preg_match( '#src=["\']([^"\']*vip-concat-version[^"\']*)#', $this->get_scripts_output(), $match ) );
+
+		return $match[1];
+	}
+
 	private function enqueue_script( $handle, $filename, $deps = array() ) {
 		$src = '/' . WPINC . '/js/' . $filename;
 
